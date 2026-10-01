@@ -59,7 +59,6 @@
     input: $('#input'),
     send: $('#send'),
     newChat: $('#new-chat'),
-    clearChat: $('#clear-chat'),
     settingsToggle: $('#settings-toggle'),
     chatList: $('#chat-list'),
     themeToggle: $('#theme-toggle'),
@@ -226,13 +225,6 @@
       if (conversations.length > 0) switchChat(conversations[0].id);
       else { currentId = null; messages = []; renderChatList(); renderMessages(); }
     } else { renderChatList(); }
-  }
-
-  function clearChat() {
-    if (streaming) stopGeneration();
-    messages.length = 0;
-    save();
-    renderMessages();
   }
 
   function renderChatList() {
@@ -1324,7 +1316,6 @@
     });
 
     els.newChat.addEventListener('click', () => createConversation());
-    els.clearChat.addEventListener('click', () => clearChat());
     els.themeToggle.addEventListener('click', () => applyTheme(currentTheme() === 'dark' ? 'light' : 'dark'));
 
     els.chatList.addEventListener('click', (e) => {

@@ -1338,8 +1338,8 @@ body::before {
   margin-top: 6px;
 }
 
-.settings__section:has(.btn) {
-  padding-bottom: 18px;
+.settings__footer {
+  padding: 4px 20px 18px;
 }
 
 /* ---------------- 移动端适配 ---------------- */
