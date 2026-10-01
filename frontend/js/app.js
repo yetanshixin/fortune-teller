@@ -1146,7 +1146,13 @@
       bubble.innerHTML = renderMarkdown(displayText);
       enhanceCodeBlocks(bubble);
       if (clean) streamMessages.push({ role: 'assistant', content: clean });
-      if (tools.length) streamMessages.push({ role: 'tool', tools: tools.slice(0, 1) });
+      if (tools.length) {
+        // 销毁所有旧的未使用术数，只保留最新这 1 个
+        for (let i = streamMessages.length - 1; i >= 0; i--) {
+          if (streamMessages[i].role === 'tool') streamMessages.splice(i, 1);
+        }
+        streamMessages.push({ role: 'tool', tools: tools.slice(0, 1) });
+      }
       const convo = conversations.find((c) => c.id === streamConvoId);
       if (convo) { convo.messages = streamMessages; convo.updatedAt = Date.now(); }
       conversations.sort((a, b) => b.updatedAt - a.updatedAt);
