@@ -1,0 +1,1401 @@
+/* ============================================================
+   玄机先生 · AI 算命先生 — 玄学主题样式（含移动端适配）
+   ============================================================ */
+
+:root {
+  --bg: #0e1020;
+  --bg-soft: #161a30;
+  --surface: #1b1f38;
+  --surface-hover: #242945;
+  --border: #2b3050;
+  --border-strong: #3a4066;
+  --gold: #d4af37;
+  --gold-soft: #e8c96a;
+  --gold-dim: #8a7430;
+  --cinnabar: #d14a3a;
+  --accent: #8b7bc0;
+  --text: #eae4d8;
+  --text-dim: #9c96ac;
+  --text-faint: #6b657e;
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  --radius: 14px;
+  --radius-sm: 10px;
+  --serif: "Noto Serif SC", "Songti SC", "SimSun", Georgia, serif;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+}
+
+[data-theme="light"] {
+  --bg: #f4efe4;
+  --bg-soft: #ece5d5;
+  --surface: #fdfaf2;
+  --surface-hover: #f4edde;
+  --border: #e3d9c4;
+  --border-strong: #d3c7ac;
+  --gold: #a8872b;
+  --gold-soft: #b8963a;
+  --gold-dim: #8c7530;
+  --cinnabar: #b23a3a;
+  --accent: #6a5aa8;
+  --text: #2c2a26;
+  --text-dim: #7a7568;
+  --text-faint: #a49e8e;
+  --shadow: 0 8px 28px rgba(90, 70, 30, 0.15);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* 自定义滚动条：细窄、金色半透明，贴合玄学主题（Firefox + Chromium/WebKit） */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold-dim) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gold-dim);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  opacity: 0.6;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold);
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* 消息区滚动条更柔和，避免与内容抢眼 */
+.messages::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  background-clip: padding-box;
+}
+
+.messages::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-dim);
+  background-clip: padding-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* 背景星象纹样 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(212, 175, 55, 0.05) 0, transparent 34%),
+    radial-gradient(circle at 86% 10%, rgba(139, 123, 192, 0.06) 0, transparent 30%),
+    radial-gradient(circle at 78% 86%, rgba(209, 74, 58, 0.05) 0, transparent 36%),
+    radial-gradient(circle at 20% 82%, rgba(212, 175, 55, 0.04) 0, transparent 32%);
+  z-index: 0;
+}
+
+/* ---------------- 布局 ---------------- */
+.app {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* ---------------- 侧边栏 ---------------- */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-soft);
+  border-right: 1px solid var(--border);
+  padding: 18px 14px;
+  gap: 14px;
+  min-height: 0;
+}
+
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 6px 8px;
+}
+
+.brand__logo {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+  color: var(--gold);
+  border: 1px solid var(--gold-dim);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, rgba(212, 175, 55, 0.16), transparent 70%);
+}
+
+.brand__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.brand__name {
+  font-family: var(--serif);
+  font-size: 18px;
+  letter-spacing: 2px;
+  color: var(--gold-soft);
+}
+
+.brand__sub {
+  font-size: 11px;
+  color: var(--text-faint);
+  letter-spacing: 1px;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  font-family: var(--sans);
+}
+
+.btn:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-strong);
+}
+
+.btn--new {
+  width: 100%;
+  color: var(--gold-soft);
+  border-style: dashed;
+}
+
+.btn--new:hover {
+  border-color: var(--gold);
+}
+
+.btn__icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.btn--primary {
+  width: 100%;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+  color: #1a1508;
+  font-weight: 600;
+  border: none;
+  padding: 12px;
+}
+
+.btn--primary:hover {
+  background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+  filter: brightness(1.06);
+}
+
+.sidebar__label {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--text-faint);
+  padding: 4px 6px;
+}
+
+.chat-list {
+  list-style: none;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.chat-list__empty {
+  font-size: 12px;
+  color: var(--text-faint);
+  text-align: center;
+  padding: 20px 0;
+}
+
+.chat-item {
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid transparent;
+}
+
+.chat-item:hover {
+  background: var(--surface-hover);
+}
+
+.chat-item.is-active {
+  background: var(--surface);
+  border-color: var(--border-strong);
+}
+
+.chat-item__main {
+  flex: 1;
+  text-align: left;
+  background: none;
+  border: none;
+  color: var(--text);
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.chat-item.is-active .chat-item__main {
+  color: var(--gold-soft);
+}
+
+.chat-item__del {
+  flex: 0 0 auto;
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  padding: 8px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.chat-item:hover .chat-item__del {
+  opacity: 1;
+}
+
+.chat-item__del:hover {
+  color: var(--cinnabar);
+}
+
+.chat-item__del svg {
+  width: 15px;
+  height: 15px;
+  display: block;
+}
+
+.sidebar__footer {
+  display: flex;
+  gap: 6px;
+  justify-content: space-around;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  transition: all 0.15s;
+}
+
+.icon-btn:hover {
+  background: var(--surface-hover);
+  color: var(--gold-soft);
+}
+
+.icon-btn svg {
+  width: 19px;
+  height: 19px;
+}
+
+.sidebar-backdrop {
+  display: none;
+}
+
+/* ---------------- 主聊天区 ---------------- */
+.chat {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.chat__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-soft);
+}
+
+.chat__header-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  font-family: var(--serif);
+  border-radius: 50%;
+}
+
+.avatar--header {
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+  color: var(--gold-soft);
+  border: 1px solid var(--gold-dim);
+  background: radial-gradient(circle at 35% 30%, rgba(212, 175, 55, 0.18), transparent 72%);
+}
+
+.avatar--bot {
+  width: 32px;
+  height: 32px;
+  font-size: 16px;
+  flex: 0 0 auto;
+  color: var(--gold-soft);
+  border: 1px solid var(--gold-dim);
+  background: radial-gradient(circle at 35% 30%, rgba(212, 175, 55, 0.15), transparent 72%);
+}
+
+.chat__heading {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chat__title {
+  font-family: var(--serif);
+  font-size: 17px;
+  letter-spacing: 2px;
+  color: var(--gold-soft);
+}
+
+.chat__status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.chat__status .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text-faint);
+}
+
+.chat__status.is-online .dot {
+  background: #4caf7a;
+  box-shadow: 0 0 8px rgba(76, 175, 122, 0.6);
+}
+
+.chat__model {
+  color: var(--text-faint);
+}
+
+.sidebar-toggle {
+  display: none;
+}
+
+/* ---------------- 消息区 ---------------- */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 22px 18px;
+  scroll-behavior: smooth;
+}
+
+.messages__inner {
+  max-width: 820px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.message {
+  display: flex;
+  gap: 10px;
+  animation: fadeIn 0.25s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.message--user {
+  justify-content: flex-end;
+}
+
+.bubble {
+  max-width: 78%;
+  padding: 12px 16px;
+  border-radius: 16px;
+  line-height: 1.65;
+  font-size: 15px;
+  word-break: break-word;
+}
+
+.bubble--user {
+  background: linear-gradient(135deg, #3a2f1e, #4a3b24);
+  color: #f6ecd6;
+  border-bottom-right-radius: 5px;
+  white-space: pre-wrap;   /* 保留用户输入的换行 */
+}
+
+.bubble--bot {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 5px;
+}
+
+.bubble--bot p {
+  margin: 0 0 8px;
+}
+
+.bubble--bot p:last-child {
+  margin-bottom: 0;
+}
+
+.bubble--bot ul,
+.bubble--bot ol {
+  padding-left: 20px;
+  margin: 6px 0;
+}
+
+.bubble--bot li {
+  margin: 3px 0;
+}
+
+.bubble--bot h1,
+.bubble--bot h2,
+.bubble--bot h3 {
+  font-family: var(--serif);
+  margin: 12px 0 6px;
+  color: var(--gold-soft);
+}
+
+.bubble--bot h1 {
+  font-size: 18px;
+}
+
+.bubble--bot h2 {
+  font-size: 16px;
+}
+
+.bubble--bot h3 {
+  font-size: 15px;
+}
+
+.bubble--bot blockquote {
+  border-left: 3px solid var(--gold-dim);
+  padding: 4px 12px;
+  margin: 8px 0;
+  color: var(--text-dim);
+  background: rgba(212, 175, 55, 0.05);
+}
+
+.bubble--bot code {
+  font-family: monospace;
+  background: var(--bg-soft);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.bubble--bot pre {
+  background: #0a0c18;
+  padding: 12px;
+  border-radius: 8px;
+  overflow-x: auto;
+  position: relative;
+  margin: 8px 0;
+}
+
+.bubble--bot pre code {
+  background: none;
+  padding: 0;
+}
+
+.bubble--bot a {
+  color: var(--accent);
+}
+
+.bubble--bot table {
+  border-collapse: collapse;
+  margin: 8px 0;
+  width: 100%;
+}
+
+.bubble--bot th,
+.bubble--bot td {
+  border: 1px solid var(--border-strong);
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.bubble--bot th {
+  background: var(--bg-soft);
+}
+
+.code-copy {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  color: var(--text-dim);
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.code-copy:hover {
+  color: var(--gold-soft);
+}
+
+/* 打字中动画 */
+.typing {
+  display: inline-flex;
+  gap: 5px;
+  padding: 6px 2px;
+}
+
+.typing span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gold-dim);
+  animation: blink 1.2s infinite;
+}
+
+.typing span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes blink {
+
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+  }
+
+  30% {
+    opacity: 1;
+  }
+}
+
+/* ---------------- 欢迎页 ---------------- */
+.welcome {
+  text-align: center;
+  padding: 30px 10px;
+}
+
+.welcome__icon {
+  font-size: 56px;
+  margin-bottom: 12px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.welcome__title {
+  font-family: var(--serif);
+  font-size: 26px;
+  letter-spacing: 4px;
+  color: var(--gold-soft);
+  margin-bottom: 8px;
+}
+
+.welcome__title span {
+  color: var(--gold);
+}
+
+.welcome__subtitle {
+  color: var(--text-dim);
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.welcome__desc {
+  color: var(--text-dim);
+  font-size: 13px;
+  max-width: 520px;
+  margin: 0 auto 22px;
+  line-height: 1.7;
+}
+
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.suggestion {
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text);
+  padding: 9px 16px;
+  border-radius: 22px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.suggestion:hover {
+  border-color: var(--gold);
+  color: var(--gold-soft);
+}
+
+/* ---------------- 术数工具快捷入口 ---------------- */
+.composer {
+  padding: 10px 18px 14px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-soft);
+}
+
+/* 对话流内的术数卡片容器 */
+.tool-card-host {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.tool-chip {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text-dim);
+  padding: 6px 12px;
+  border-radius: 18px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.tool-chip:hover {
+  border-color: var(--gold);
+  color: var(--gold-soft);
+}
+
+.tool-chip .emoji {
+  font-size: 14px;
+}
+
+.composer__box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 18px;
+  padding: 8px 8px 8px 16px;
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+.composer__box:focus-within {
+  border-color: var(--gold-dim);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.08);
+}
+
+.composer__box textarea {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  resize: none;
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.5;
+  max-height: 180px;
+  font-family: var(--sans);
+}
+
+.composer__box textarea::placeholder {
+  color: var(--text-faint);
+}
+
+.btn--send {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+  color: #1a1508;
+  border: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: all 0.15s;
+}
+
+.btn--send svg {
+  width: 18px;
+  height: 18px;
+}
+
+.btn--send:hover {
+  background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+  filter: brightness(1.08);
+}
+
+.btn--send.is-disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.composer__hint {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 8px;
+}
+
+/* ---------------- 弹窗 ---------------- */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  padding: 20px;
+  backdrop-filter: blur(3px);
+}
+
+.modal.is-show {
+  display: flex;
+}
+
+.modal__card {
+  background: var(--bg-soft);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: modalIn 0.22s ease;
+}
+
+.modal__card--wide {
+  max-width: 760px;
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--bg-soft);   /* 固定标题栏，滚动时遮住下方内容 */
+}
+
+.modal__title {
+  font-family: var(--serif);
+  font-size: 18px;
+  letter-spacing: 2px;
+  color: var(--gold-soft);
+}
+
+.modal__close {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 20px;
+  cursor: pointer;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+}
+
+.modal__close:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+/* ---------------- 术数面板 ---------------- */
+.divination {
+  min-height: 420px;
+}
+
+.divination__form {
+  padding: 18px 20px;
+  overflow-y: auto;
+}
+
+.div-form__title {
+  font-family: var(--serif);
+  font-size: 16px;
+  color: var(--gold-soft);
+  margin-bottom: 4px;
+  letter-spacing: 1px;
+}
+
+.div-form__desc {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+.form-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.form-row>* {
+  flex: 1;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+
+.field label {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.field input,
+.field select,
+.field textarea {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 14px;
+  outline: none;
+  font-family: var(--sans);
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--gold-dim);
+}
+
+.field textarea {
+  resize: vertical;
+  min-height: 70px;
+}
+
+.seg {
+  display: flex;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.seg button {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  padding: 9px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.seg button.is-active {
+  background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+  color: #1a1508;
+  font-weight: 600;
+}
+
+/* 六爻硬币 */
+.coin-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.coin-row .yao-no {
+  width: 46px;
+  font-size: 12px;
+  color: var(--text-dim);
+  flex: 0 0 auto;
+}
+
+.coin {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--gold-dim);
+  background: radial-gradient(circle at 35% 30%, #f0d98a, #c9a227 70%, #8a7430);
+  color: #4a3b14;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: transform 0.15s;
+  flex: 0 0 auto;
+}
+
+.coin:hover {
+  transform: scale(1.08);
+}
+
+.coin.is-tail {
+  background: radial-gradient(circle at 35% 30%, #e8e0cc, #b8af98 70%, #6b657e);
+  color: #3a3630;
+}
+
+.coin-result {
+  font-size: 12px;
+  color: var(--gold-soft);
+  margin-left: 6px;
+}
+
+/* ---------------- 排盘卡片 ---------------- */
+.div-card {
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--bg-soft);
+  overflow: hidden;
+  margin: 4px 0;
+}
+
+.div-card__head {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--serif);
+  font-size: 14px;
+  color: var(--gold-soft);
+  letter-spacing: 1px;
+}
+
+.div-card__body {
+  padding: 14px 16px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text);
+}
+
+/* 卦象 */
+.hexagram {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 10px 0;
+}
+
+.yao {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.yao__line {
+  position: relative;
+  height: 6px;
+  border-radius: 3px;
+}
+
+.yao__line--yang {
+  background: var(--gold-soft);
+}
+
+.yao__line--yin {
+  background: var(--gold-soft);
+}
+
+.yao__line--yin::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -3px;
+  width: 12px;
+  height: 12px;
+  background: var(--bg-soft);
+  transform: translateX(-50%);
+}
+
+.yao__line--moving {
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.7);
+}
+
+.yao__label {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.hexagram-wrap {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.hexagram-block {
+  text-align: center;
+}
+
+.hexagram-block .hex-name {
+  font-family: var(--serif);
+  font-size: 15px;
+  color: var(--gold-soft);
+  margin-bottom: 6px;
+}
+
+/* 塔罗 / 符文 */
+.tarot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.tarot-card {
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 12px 10px;
+  text-align: center;
+  background: var(--surface);
+}
+
+.tarot-card.is-reversed {
+  border-color: var(--cinnabar);
+}
+
+.tarot-card__pos {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-bottom: 6px;
+}
+
+.tarot-card__name {
+  font-family: var(--serif);
+  font-size: 15px;
+  color: var(--gold-soft);
+}
+
+.tarot-card__rev {
+  font-size: 11px;
+  color: var(--cinnabar);
+  margin-top: 4px;
+}
+
+.tarot-card__meaning {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 6px;
+}
+
+.rune-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.rune {
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: var(--surface);
+  min-width: 110px;
+  text-align: center;
+}
+
+.rune__glyph {
+  font-size: 28px;
+  color: var(--gold-soft);
+}
+
+.rune__name {
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.rune__rev {
+  font-size: 11px;
+  color: var(--cinnabar);
+}
+
+/* 八字四柱表格 */
+.pillar-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+}
+
+.pillar-table th,
+.pillar-table td {
+  border: 1px solid var(--border-strong);
+  padding: 6px 8px;
+  text-align: center;
+  font-size: 12px;
+}
+
+.pillar-table th {
+  background: var(--surface);
+  color: var(--gold-soft);
+  font-family: var(--serif);
+}
+
+/* 起名候选 */
+.name-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.name-candidate {
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 10px;
+  background: var(--surface);
+}
+
+.name-candidate__name {
+  font-family: var(--serif);
+  font-size: 20px;
+  color: var(--gold-soft);
+  letter-spacing: 2px;
+}
+
+.name-candidate__meaning {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+.name-candidate__wuge {
+  font-size: 10px;
+  color: var(--text-faint);
+  margin-top: 4px;
+}
+
+/* ---------------- 设置 ---------------- */
+.settings__section {
+  padding: 14px 20px 4px;
+}
+
+.settings__label {
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+}
+
+.settings__models {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.model-option {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 11px 14px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+}
+
+.model-option:hover {
+  border-color: var(--gold-dim);
+}
+
+.model-option.is-selected {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+}
+
+.model-option__name {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.model-option__desc {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.settings__input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  outline: none;
+}
+
+.settings__input:focus {
+  border-color: var(--gold-dim);
+}
+
+.settings__hint {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 6px;
+}
+
+.settings__section:has(.btn) {
+  padding-bottom: 18px;
+}
+
+/* ---------------- 移动端适配 ---------------- */
+@media (max-width: 820px) {
+  .app {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 280px;
+    z-index: 40;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+  }
+
+  .sidebar.is-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+  }
+
+  .sidebar-backdrop.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .sidebar-toggle {
+    display: grid;
+  }
+
+  .divination__form {
+    max-height: none;
+  }
+
+  .bubble {
+    max-width: 88%;
+  }
+
+  .messages {
+    padding: 16px 12px;
+  }
+
+  .composer {
+    padding: 8px 12px 12px;
+  }
+}

@@ -1,0 +1,16 @@
+# Render 部署配置（Blueprint）
+# 部署步骤见 README.md「部署到 Render」一节。
+services:
+  - type: web
+    name: fortune-teller
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DEEPSEEK_API_KEY
+        sync: false   # 敏感信息：请在 Render 面板手动填写，不从仓库同步
+      - key: DEEPSEEK_MODEL
+        value: deepseek-flash
+      - key: DEEPSEEK_BASE_URL
+        value: https://api.deepseek.com
