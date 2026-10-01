@@ -32,6 +32,7 @@
     { key: 'naming', name: '起名', emoji: '📛', desc: '五行补益 · 五格数理 · 字义' },
     { key: 'name_fortune', name: '测名', emoji: '📝', desc: '姓名五格数理 · 五行 · 吉凶' },
     { key: 'cezi', name: '测字', emoji: '🖋', desc: '一字测事 · 拆字断卦' },
+    { key: 'company_naming', name: '公司取名', emoji: '🏢', desc: '商号 · 行业 · 吉祥字' },
   ];
 
   const WELCOME_SUGGESTIONS = [
@@ -341,6 +342,7 @@
       case 'dream': return formatDream(data);
       case 'naming': return formatNaming(data);
       case 'name_fortune': return formatNameFortune(data);
+      case 'company_naming': return formatCompanyNaming(data);
       default: return { text: '', html: '' };
     }
   }
@@ -640,6 +642,28 @@
     return { text, html };
   }
 
+  function formatCompanyNaming(d) {
+    const text = [
+      '【测算数据 · 公司取名】',
+      `行业：${d.industry}` + (d.preference ? `；期望寓意：${d.preference}` : ''),
+      '候选商号：',
+      ...d.candidates.map((c) => `${c.name}（${c.meaning}）`),
+      '',
+      '请先生据此为公司推荐最合适的商号，结合行业、寓意、音韵、易记程度详细说明理由。',
+    ].join('\n');
+
+    const names = d.candidates.map((c) =>
+      `<div class="name-candidate"><div class="name-candidate__name">${escapeHtml(c.name)}</div>` +
+      `<div class="name-candidate__meaning">${escapeHtml(c.meaning)}</div>` +
+      `<div class="name-candidate__wuge">${c.chars.map((ch) => ch.char + ch.wuxing).join(' ')}</div>` +
+      '</div>'
+    ).join('');
+    const html =
+      '<div class="div-card"><div class="div-card__head">🏢 公司取名 · ' + escapeHtml(d.industry) + '</div><div class="div-card__body">' +
+      `<div class="name-grid">${names}</div></div></div>`;
+    return { text, html };
+  }
+
   /* ---------------- 术数面板 ---------------- */
   function renderForm(method) {
     els.divinationForm.innerHTML = '';
@@ -656,6 +680,7 @@
       case 'naming': form.appendChild(formNaming()); break;
       case 'name_fortune': form.appendChild(formNameFortune()); break;
       case 'cezi': form.appendChild(formCezi()); break;
+      case 'company_naming': form.appendChild(formCompanyNaming()); break;
     }
     els.divinationForm.appendChild(form);
   }
@@ -941,6 +966,31 @@
       const name = f.querySelector('#nf-name').value.trim();
       if (!name) { alert('请输入姓名'); return; }
       submitDivination('name_fortune', { name });
+    });
+    return f;
+  }
+
+  function formCompanyNaming() {
+    const f = document.createElement('div');
+    f.innerHTML =
+      '<div class="div-form__title">公司取名</div>' +
+      '<div class="div-form__desc">填写公司所属行业与期望寓意，为你推演吉祥商号。</div>';
+    f.appendChild(field('行业', '<input id="cn-industry" maxlength="20" placeholder="例如：科技 / 餐饮 / 贸易">'));
+    const length = segControl([{ value: '2', label: '二字' }, { value: '3', label: '三字' }, { value: '4', label: '四字' }], '2');
+    f.appendChild(field('商号字数', length));
+    f.appendChild(field('期望寓意（可选）', '<input id="cn-pref" placeholder="例如：兴旺、诚信、创新">'));
+    const btn = document.createElement('button');
+    btn.className = 'btn btn--primary';
+    btn.textContent = '推演商号';
+    f.appendChild(btn);
+    btn.addEventListener('click', () => {
+      const industry = f.querySelector('#cn-industry').value.trim();
+      if (!industry) { alert('请填写行业'); return; }
+      submitDivination('company_naming', {
+        industry,
+        preference: f.querySelector('#cn-pref').value.trim() || null,
+        length: Number(length.querySelector('.is-active').dataset.v),
+      });
     });
     return f;
   }

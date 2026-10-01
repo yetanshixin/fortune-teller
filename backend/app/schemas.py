@@ -92,3 +92,10 @@ class NamingRequest(BaseModel):
 class NameFortuneRequest(BaseModel):
     """测名请求：输入完整姓名（中文/日文汉字或英文名）。"""
     name: str = Field(..., min_length=1, max_length=40)
+
+
+class CompanyNamingRequest(BaseModel):
+    """公司取名请求。industry 行业；preference 期望寓意/偏好字（可选）；length 商号字数。"""
+    industry: str = Field(..., min_length=1, max_length=20)
+    preference: Optional[str] = None
+    length: int = Field(default=2, ge=2, le=4)
