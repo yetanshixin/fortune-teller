@@ -1102,6 +1102,8 @@
     let buffer = '';
     let rafId = null;
     let failed = false;
+    let interrupted = false;
+    let interruptedContent = '';
     const render = () => {
       if (rafId) return;
       rafId = requestAnimationFrame(() => {
@@ -1131,6 +1133,8 @@
           buffer = '> ⚠️ 请求失败：' + (err2?.message || err2);
         }
       } else {
+        interrupted = true;
+        interruptedContent = buffer;   // 已生成的部分内容
         buffer += '\n\n> ⚠️ 生成中断：' + (err?.message || err);
       }
     } finally {
@@ -1150,8 +1154,28 @@
           streamAssistantReply();
         });
         bubble.appendChild(retryBtn);
+      } else if (interrupted) {
+        const contBtn = document.createElement('button');
+        contBtn.className = 'retry-btn';
+        contBtn.textContent = '▶ 继续生成';
+        contBtn.addEventListener('click', () => {
+          const partial = extractTools(interruptedContent).clean || interruptedContent;
+          streamMessages.push({ role: 'assistant', content: partial });
+          bubble.closest('.message').remove();
+          streamAssistantReply();
+        });
+        const regenBtn = document.createElement('button');
+        regenBtn.className = 'retry-btn';
+        regenBtn.style.marginLeft = '8px';
+        regenBtn.textContent = '🔄 重新生成';
+        regenBtn.addEventListener('click', () => {
+          bubble.closest('.message').remove();
+          streamAssistantReply();
+        });
+        bubble.appendChild(contBtn);
+        bubble.appendChild(regenBtn);
       }
-      if (clean) streamMessages.push({ role: 'assistant', content: clean });
+      if (clean && !failed && !interrupted) streamMessages.push({ role: 'assistant', content: clean });
       if (tools.length) {
         // 销毁所有旧的未使用术数，只保留最新这 1 个
         for (let i = streamMessages.length - 1; i >= 0; i--) {
