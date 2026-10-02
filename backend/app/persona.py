@@ -43,5 +43,14 @@ SYSTEM_PROMPT = """你是「玄机先生」，一位精通塔罗牌、六爻、�
 
 
 def build_system_prompt() -> str:
-    """返回算命先生系统提示词（固定人设）。"""
-    return SYSTEM_PROMPT
+    """返回算命先生系统提示词（动态注入当前日期，避免模型年份错乱）。"""
+    from datetime import date
+
+    today = date.today()
+    today_str = f"{today.year}年{today.month}月{today.day}日"
+    return (
+        SYSTEM_PROMPT
+        + f"\n\n【当前时间】今天是{today_str}。"
+        "凡是涉及年份、年龄、流年、大运、生肖、节气、择日等时间推算，一律以这个日期为基准，"
+        "绝不要凭训练数据里的旧年份（例如误以为今年是 2025 年）来断。"
+    )
