@@ -1101,6 +1101,7 @@
 
     let buffer = '';
     let rafId = null;
+    let failed = false;
     const render = () => {
       if (rafId) return;
       rafId = requestAnimationFrame(() => {
@@ -1125,7 +1126,10 @@
         buffer += buffer ? '\n\n*(已停止生成)*' : '*(已停止生成)*';
       } else if (buffer === '') {
         try { buffer = await fallbackNonStream(history); }
-        catch (err2) { buffer = '> ⚠️ 请求失败：' + (err2?.message || err2); }
+        catch (err2) {
+          failed = true;
+          buffer = '> ⚠️ 请求失败：' + (err2?.message || err2);
+        }
       } else {
         buffer += '\n\n> ⚠️ 生成中断：' + (err?.message || err);
       }
@@ -1137,6 +1141,16 @@
       const displayText = clean || (tools.length ? '（先生递上一门术数，请点击使用）' : buffer);
       bubble.innerHTML = renderMarkdown(displayText);
       enhanceCodeBlocks(bubble);
+      if (failed) {
+        const retryBtn = document.createElement('button');
+        retryBtn.className = 'retry-btn';
+        retryBtn.textContent = '🔄 重试';
+        retryBtn.addEventListener('click', () => {
+          bubble.closest('.message').remove();
+          streamAssistantReply();
+        });
+        bubble.appendChild(retryBtn);
+      }
       if (clean) streamMessages.push({ role: 'assistant', content: clean });
       if (tools.length) {
         // 销毁所有旧的未使用术数，只保留最新这 1 个

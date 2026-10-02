@@ -640,6 +640,24 @@ body::before {
   }
 }
 
+/* 请求失败时的重试按钮 */
+.retry-btn {
+  margin-top: 10px;
+  background: var(--surface-hover);
+  border: 1px solid var(--border-strong);
+  color: var(--gold-soft);
+  padding: 6px 16px;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: var(--sans);
+  transition: all 0.15s;
+}
+.retry-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
 /* ---------------- 欢迎页 ---------------- */
 .welcome {
   text-align: center;
