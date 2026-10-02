@@ -1324,12 +1324,22 @@
 
   /* ---------------- 健康检查 ---------------- */
   async function checkHealth() {
-    try {
-      await axios.get(API_BASE + '/api/health', { timeout: 5000 });
+    // 免费版 Render 可能正休眠，唤醒需几十秒：延长超时并多次重试，避免误判离线
+    let online = false;
+    for (let i = 0; i < 4; i++) {
+      try {
+        await axios.get(API_BASE + '/api/health', { timeout: 15000 });
+        online = true;
+        break;
+      } catch {
+        if (i < 3) await new Promise((r) => setTimeout(r, 4000));
+      }
+    }
+    if (online) {
       els.statusText.textContent = '在线';
       els.status.classList.add('is-online');
       els.modelName.textContent = settings.model;
-    } catch {
+    } else {
       els.statusText.textContent = '离线';
       els.status.classList.remove('is-online');
       els.modelName.textContent = '';
