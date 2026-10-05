@@ -193,6 +193,30 @@ CHARS = [
     ("芽", 10, "木", "萌芽、希望", "f"),
     ("澪", 16, "水", "水脉、清澈", "f"),
     ("蓮", 17, "木", "莲花、纯洁", "f"),
+    # —— 公司名常用字扩充（康熙笔画，用于公司测名）——
+    ("为", 9, "土", "作为、有为", "n"),
+    ("果", 8, "木", "成果、果实", "n"),
+    ("商", 11, "金", "商业、商号", "n"),
+    ("事", 8, "金", "事业、事务", "n"),
+    ("有", 6, "土", "拥有、富有", "n"),
+    ("限", 9, "金", "有限、界限", "n"),
+    ("股", 8, "木", "股份、股本", "n"),
+    ("份", 6, "水", "份量、股份", "n"),
+    ("集", 12, "木", "集团、聚集", "n"),
+    ("团", 14, "火", "团体、团结", "n"),
+    ("电", 13, "火", "电力、电子", "n"),
+    ("网", 14, "水", "网络、网罗", "n"),
+    ("贸", 12, "金", "贸易、商贸", "n"),
+    ("易", 8, "火", "交易、容易", "n"),
+    ("联", 17, "木", "联合、联盟", "n"),
+    ("合", 6, "水", "合作、联合", "n"),
+    ("术", 11, "木", "技术、术业", "n"),
+    ("实", 15, "金", "实业、务实", "n"),
+    ("业", 13, "木", "事业、企业", "n"),
+    ("苹", 22, "木", "苹果、平安", "n"),
+    ("阿", 8, "土", "阿、亲切", "n"),
+    ("里", 7, "火", "里、内部", "n"),
+    ("巴", 4, "水", "巴、期待", "n"),
 ]
 
 
@@ -667,4 +691,35 @@ def compute_company_naming(req) -> dict:
         "preference": pref,
         "length": length,
         "candidates": candidates,
+    }
+
+
+def compute_company_name_fortune(name: str) -> dict:
+    """公司测名：输入已有公司名，分析拆字、五行、寓意、总笔画。"""
+    name = (name or "").strip()
+    if not name:
+        raise ValueError("请输入公司名")
+    if _detect_lang(name) == "english":
+        return _name_fortune_english(name)  # 复用英文毕达哥拉斯灵数
+
+    chars = []
+    unknown = []
+    for ch in name:
+        info = _CHAR_INDEX.get(ch)  # 名字用字库（含日文字，有笔画）
+        if not info:
+            c = next((c for c in COMPANY_CHARS if c[0] == ch), None)  # 公司吉祥字库（无笔画）
+            info = {"strokes": None, "wuxing": c[1], "meaning": c[2]} if c else None
+        if info:
+            chars.append({"char": ch, "strokes": info.get("strokes"), "wuxing": info.get("wuxing"), "meaning": info.get("meaning")})
+        else:
+            unknown.append(ch)
+            chars.append({"char": ch, "strokes": None, "wuxing": None, "meaning": None})
+
+    total_strokes = sum(c["strokes"] for c in chars if c["strokes"])
+    return {
+        "name": name,
+        "lang": "zh",
+        "chars": chars,
+        "unknown_chars": unknown,
+        "total_strokes": total_strokes if not unknown else None,
     }

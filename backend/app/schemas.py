@@ -112,3 +112,8 @@ class ChouQianRequest(BaseModel):
 class ShuZiRequest(BaseModel):
     """数字测吉凶请求：手机号/车牌号等数字串。"""
     number: str = Field(..., min_length=1, max_length=20)
+
+
+class CompanyNameFortuneRequest(BaseModel):
+    """公司测名请求：输入已有公司名（中文/日文汉字或英文名）。"""
+    name: str = Field(..., min_length=1, max_length=40)

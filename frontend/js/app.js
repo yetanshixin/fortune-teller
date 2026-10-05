@@ -31,6 +31,7 @@
     { key: 'naming', name: '起名', emoji: '📛', desc: '五行补益 · 五格数理 · 字义' },
     { key: 'name_fortune', name: '测名', emoji: '📝', desc: '姓名五格数理 · 五行 · 吉凶' },
     { key: 'company_naming', name: '公司取名', emoji: '🏢', desc: '商号 · 行业 · 吉祥字' },
+    { key: 'company_name_fortune', name: '公司测名', emoji: '🏢', desc: '测已有公司名吉凶' },
     { key: 'hehun', name: '合婚', emoji: '💑', desc: '八字配对 · 生肖五行日柱' },
     { key: 'chouqian', name: '抽签', emoji: '🎐', desc: '求签问吉凶 · 签文' },
     { key: 'shuzi', name: '数字测吉凶', emoji: '📱', desc: '手机号/车牌号 · 数字能量' },
@@ -369,6 +370,7 @@
       case 'naming': return formatNaming(data);
       case 'name_fortune': return formatNameFortune(data);
       case 'company_naming': return formatCompanyNaming(data);
+      case 'company_name_fortune': return formatCompanyNameFortune(data);
       case 'hehun': return formatHeHun(data);
       case 'chouqian': return formatChouQian(data);
       case 'shuzi': return formatShuZi(data);
@@ -680,6 +682,43 @@
     return { text, html };
   }
 
+  function formatCompanyNameFortune(d) {
+    if (d.type === 'english') {
+      const text = [
+        '【测算数据 · 公司测名】',
+        `公司名：${d.name}（英文）`,
+        `毕达哥拉斯灵数：${d.number} —— ${d.meaning}`,
+        '',
+        '请先生据此分析这个公司名的吉凶，结合灵数含义详细说明。',
+      ].join('\n');
+      const html =
+        '<div class="div-card"><div class="div-card__head">🏢 公司测名 · ' + escapeHtml(d.name) + '</div><div class="div-card__body">' +
+        `<p>毕达哥拉斯灵数 <span style="font-family:var(--serif);font-size:26px;color:var(--gold-soft)">${d.number}</span></p>` +
+        `<p>${escapeHtml(d.meaning)}</p></div></div>`;
+      return { text, html };
+    }
+    const charDesc = d.chars.map((c) => c.strokes ? `${c.char}（${c.strokes}画·${c.wuxing}）` : `${c.char}（笔画未知）`).join(' ');
+    const text = [
+      '【测算数据 · 公司测名】',
+      `公司名：${d.name}`,
+      `拆字：${charDesc}`,
+      d.unknown_chars.length ? `注意：${d.unknown_chars.join('、')} 的笔画暂不在字库，总笔画无法精确计算。` : '',
+      d.total_strokes ? `总笔画：${d.total_strokes}` : '',
+      '',
+      '请先生据此分析这个公司名的吉凶，结合拆字、五行、寓意、音韵详细说明。',
+    ].filter(Boolean).join('\n');
+    const charsHtml = d.chars.map((c) =>
+      `<span style="margin-right:10px">${escapeHtml(c.char)}${c.strokes ? `（${c.strokes}画·${c.wuxing}）` : '（笔画未知）'}</span>`
+    ).join('');
+    const html =
+      '<div class="div-card"><div class="div-card__head">🏢 公司测名 · ' + escapeHtml(d.name) + '</div><div class="div-card__body">' +
+      (d.total_strokes ? `<p>总笔画：<b style="color:var(--gold-soft)">${d.total_strokes}</b></p>` : '') +
+      `<p>拆字：${charsHtml}</p>` +
+      (d.unknown_chars.length ? `<p style="color:var(--cinnabar)">${d.unknown_chars.join('、')} 的笔画不在字库，总笔画暂无法精确计算</p>` : '') +
+      '</div></div>';
+    return { text, html };
+  }
+
   function formatHeHun(d) {
     const text = [
       '【测算数据 · 合婚】',
@@ -750,6 +789,7 @@
       case 'naming': form.appendChild(formNaming()); break;
       case 'name_fortune': form.appendChild(formNameFortune()); break;
       case 'company_naming': form.appendChild(formCompanyNaming()); break;
+      case 'company_name_fortune': form.appendChild(formCompanyNameFortune()); break;
       case 'hehun': form.appendChild(formHeHun()); break;
       case 'chouqian': form.appendChild(formChouQian()); break;
       case 'shuzi': form.appendChild(formShuZi()); break;
@@ -1052,6 +1092,24 @@
         preference: f.querySelector('#cn-pref').value.trim() || null,
         length: Number(length.querySelector('.is-active').dataset.v),
       });
+    });
+    return f;
+  }
+
+  function formCompanyNameFortune() {
+    const f = document.createElement('div');
+    f.innerHTML =
+      '<div class="div-form__title">公司测名</div>' +
+      '<div class="div-form__desc">输入一个已有的公司名，分析其拆字、五行、寓意与吉凶。字库外的字会如实提示。</div>';
+    f.appendChild(field('公司名', '<input id="cnf-name" maxlength="40" placeholder="例如：华为 / Apple / 大和商事">'));
+    const btn = document.createElement('button');
+    btn.className = 'btn btn--primary';
+    btn.textContent = '测算公司名';
+    f.appendChild(btn);
+    btn.addEventListener('click', () => {
+      const name = f.querySelector('#cnf-name').value.trim();
+      if (!name) { alert('请输入公司名'); return; }
+      submitDivination('company_name_fortune', { name });
     });
     return f;
   }

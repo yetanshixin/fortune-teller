@@ -16,6 +16,7 @@ from app.schemas import (
     ChatRequest,
     ChatResponse,
     ChouQianRequest,
+    CompanyNameFortuneRequest,
     CompanyNamingRequest,
     DreamRequest,
     HeHunRequest,
@@ -164,6 +165,14 @@ async def div_name_fortune(req: NameFortuneRequest):
 async def div_company_naming(req: CompanyNamingRequest):
     try:
         return naming.compute_company_naming(req)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/api/divination/company_name_fortune")
+async def div_company_name_fortune(req: CompanyNameFortuneRequest):
+    try:
+        return naming.compute_company_name_fortune(req.name)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
