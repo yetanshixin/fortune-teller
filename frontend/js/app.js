@@ -680,7 +680,7 @@
     const names = d.candidates.map((c) =>
       `<div class="name-candidate"><div class="name-candidate__name">${escapeHtml(c.name)}</div>` +
       `<div class="name-candidate__meaning">${escapeHtml(c.meaning)}</div>` +
-      `<div class="name-candidate__wuge">${c.chars.map((ch) => ch.char + ch.wuxing).join(' ')}</div>` +
+      (c.chars ? `<div class="name-candidate__wuge">${c.chars.map((ch) => ch.char + ch.wuxing).join(' ')}</div>` : '') +
       '</div>'
     ).join('');
     const html =
@@ -998,10 +998,12 @@
     const f = document.createElement('div');
     f.innerHTML =
       '<div class="div-form__title">公司取名</div>' +
-      '<div class="div-form__desc">填写公司所属行业与期望寓意，为你推演吉祥商号。</div>';
+      '<div class="div-form__desc">填写公司所属行业、语言与期望寓意，为你推演吉祥商号。</div>';
+    const lang = segControl([{ value: 'zh', label: '中文' }, { value: 'en', label: '英文' }, { value: 'ja', label: '日文' }], 'zh');
+    f.appendChild(field('语言', lang));
     f.appendChild(field('行业', '<input id="cn-industry" maxlength="20" placeholder="例如：科技 / 餐饮 / 贸易">'));
     const length = segControl([{ value: '2', label: '二字' }, { value: '3', label: '三字' }, { value: '4', label: '四字' }], '2');
-    f.appendChild(field('商号字数', length));
+    f.appendChild(field('商号字数（中文）', length));
     f.appendChild(field('期望寓意（可选）', '<input id="cn-pref" placeholder="例如：兴旺、诚信、创新">'));
     const btn = document.createElement('button');
     btn.className = 'btn btn--primary';
@@ -1012,6 +1014,7 @@
       if (!industry) { alert('请填写行业'); return; }
       submitDivination('company_naming', {
         industry,
+        lang: lang.querySelector('.is-active').dataset.v,
         preference: f.querySelector('#cn-pref').value.trim() || null,
         length: Number(length.querySelector('.is-active').dataset.v),
       });

@@ -95,7 +95,8 @@ class NameFortuneRequest(BaseModel):
 
 
 class CompanyNamingRequest(BaseModel):
-    """公司取名请求。industry 行业；preference 期望寓意/偏好字（可选）；length 商号字数。"""
+    """公司取名请求。industry 行业；lang 语言（zh/en/ja）；preference 期望寓意（可选）；length 商号字数。"""
     industry: str = Field(..., min_length=1, max_length=20)
+    lang: Literal["zh", "en", "ja"] = "zh"
     preference: Optional[str] = None
     length: int = Field(default=2, ge=2, le=4)

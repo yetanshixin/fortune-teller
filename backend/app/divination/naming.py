@@ -513,9 +513,83 @@ COMPANY_CHARS = [
 ]
 
 
+# 英文公司名：前缀词 + 业务后缀词
+ENGLISH_COMPANY_PREFIX = [
+    ("Golden", "金色的"), ("Bright", "光明的"), ("Royal", "尊贵的"), ("Great", "伟大的"),
+    ("Prime", "卓越的"), ("Top", "顶级的"), ("First", "第一的"), ("New", "崭新的"),
+    ("Super", "超级的"), ("Global", "全球的"), ("Universal", "环球的"), ("Ever", "永恒的"),
+    ("Sun", "太阳"), ("Star", "星辰"), ("Sky", "天空"), ("Ocean", "海洋"),
+    ("Lucky", "幸运的"), ("Fortune", "财富"), ("Prosper", "繁荣的"), ("Wisdom", "智慧"),
+    ("Power", "力量"), ("Victory", "胜利"), ("Harmony", "和谐"), ("Trust", "信任"),
+    ("Honor", "荣耀"), ("Noble", "高贵的"), ("True", "真诚的"), ("Grace", "优雅的"),
+]
+ENGLISH_COMPANY_SUFFIX = [
+    ("Tech", "科技"), ("Soft", "软件"), ("Trade", "贸易"), ("Group", "集团"),
+    ("Holdings", "控股"), ("Industries", "实业"), ("International", "国际"), ("Solutions", "解决方案"),
+    ("Innovations", "创新"), ("Enterprises", "企业"), ("Ventures", "创投"), ("Partners", "伙伴"),
+    ("Consulting", "咨询"), ("Media", "传媒"), ("Digital", "数字"), ("Network", "网络"),
+    ("Energy", "能源"), ("Food", "食品"), ("Retail", "零售"), ("Beauty", "美业"),
+    ("Health", "健康"), ("Education", "教育"), ("Culture", "文化"), ("Travel", "旅行"),
+    ("Design", "设计"), ("Studio", "工作室"), ("Creative", "创意"), ("Future", "未来"),
+]
+
+# 日文公司名：前缀汉字 + 业务后缀汉字
+JAPANESE_COMPANY_PREFIX = [
+    ("大和", "大和"), ("朝日", "朝阳"), ("富士", "富士"), ("桜", "樱花"),
+    ("梅", "梅花"), ("松", "青松"), ("竹", "翠竹"), ("龍", "龙"),
+    ("鳳", "凤凰"), ("金", "黄金"), ("銀", "白银"), ("玉", "美玉"),
+    ("宝", "珍宝"), ("福", "福气"), ("吉", "吉祥"), ("祥", "祥和"),
+    ("瑞", "祥瑞"), ("昌", "昌盛"), ("隆", "兴隆"), ("栄", "繁荣"),
+    ("信", "诚信"), ("誠", "真诚"), ("和", "和谐"), ("共", "共赢"),
+    ("新", "崭新"), ("創", "创造"), ("永", "永恒"), ("光", "光明"),
+    ("星", "星辰"), ("海", "海洋"), ("山", "高山"), ("川", "河川"),
+]
+JAPANESE_COMPANY_SUFFIX = [
+    ("商事", "贸易"), ("工業", "工业"), ("電機", "电机"), ("食品", "食品"),
+    ("製薬", "制药"), ("銀行", "银行"), ("不動産", "房地产"), ("建設", "建设"),
+    ("運輸", "运输"), ("観光", "旅游"), ("出版", "出版"), ("映画", "电影"),
+    ("音楽", "音乐"), ("情報", "信息"), ("通信", "通信"), ("貿易", "贸易"),
+    ("物流", "物流"), ("企画", "企划"), ("設計", "设计"), ("広告", "广告"),
+]
+
+
+def _company_foreign(req, prefixes, suffixes, separator, lang) -> dict:
+    """英文/日文公司名：前缀 + 业务后缀组合。"""
+    pref = (req.preference or "").strip()
+    candidates = []
+    seen = set()
+    for p, p_meaning in prefixes:
+        for s, s_meaning in suffixes:
+            name = p + separator + s
+            if name in seen:
+                continue
+            seen.add(name)
+            candidates.append({"name": name, "meaning": f"{p_meaning}；{s_meaning}"})
+            if len(candidates) >= 16:
+                break
+        if len(candidates) >= 16:
+            break
+    if pref:
+        matched = [c for c in candidates if pref in c["name"] or pref in c["meaning"]]
+        if matched:
+            candidates = matched
+    return {
+        "industry": req.industry.strip(),
+        "lang": lang,
+        "preference": pref,
+        "candidates": candidates,
+    }
+
+
 def compute_company_naming(req) -> dict:
-    """公司取名：按行业、期望寓意、字数生成候选商号。"""
+    """公司取名：按行业、语言、期望寓意、字数生成候选商号。"""
     from itertools import product
+
+    lang = getattr(req, "lang", "zh")
+    if lang == "en":
+        return _company_foreign(req, ENGLISH_COMPANY_PREFIX, ENGLISH_COMPANY_SUFFIX, " ", "en")
+    if lang == "ja":
+        return _company_foreign(req, JAPANESE_COMPANY_PREFIX, JAPANESE_COMPANY_SUFFIX, "", "ja")
 
     industry = req.industry.strip()
     pref = (req.preference or "").strip()
@@ -551,6 +625,7 @@ def compute_company_naming(req) -> dict:
 
     return {
         "industry": industry,
+        "lang": "zh",
         "preference": pref,
         "length": length,
         "candidates": candidates,
