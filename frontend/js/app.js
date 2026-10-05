@@ -31,7 +31,6 @@
     { key: 'dream', name: '解梦', emoji: '💭', desc: '周公解梦 · 梦境关键词' },
     { key: 'naming', name: '起名', emoji: '📛', desc: '五行补益 · 五格数理 · 字义' },
     { key: 'name_fortune', name: '测名', emoji: '📝', desc: '姓名五格数理 · 五行 · 吉凶' },
-    { key: 'cezi', name: '测字', emoji: '🖋', desc: '一字测事 · 拆字断卦' },
     { key: 'company_naming', name: '公司取名', emoji: '🏢', desc: '商号 · 行业 · 吉祥字' },
   ];
 
@@ -705,7 +704,6 @@
       case 'dream': form.appendChild(formDream()); break;
       case 'naming': form.appendChild(formNaming()); break;
       case 'name_fortune': form.appendChild(formNameFortune()); break;
-      case 'cezi': form.appendChild(formCezi()); break;
       case 'company_naming': form.appendChild(formCompanyNaming()); break;
     }
     els.divinationForm.appendChild(form);
@@ -1017,25 +1015,6 @@
         preference: f.querySelector('#cn-pref').value.trim() || null,
         length: Number(length.querySelector('.is-active').dataset.v),
       });
-    });
-    return f;
-  }
-
-  function formCezi() {
-    const f = document.createElement('div');
-    f.innerHTML =
-      '<div class="div-form__title">测字</div>' +
-      '<div class="div-form__desc">心中默念所问之事，写下一个字（或两个字）。先生按笔画起卦，再拆字解义。</div>';
-    f.appendChild(field('汉字（1~2 字）', '<input id="cz-word" maxlength="2" placeholder="例如：一">'));
-    f.insertAdjacentHTML('beforeend', '<div class="div-form__desc" style="color:var(--text-faint)">仅支持内置常用字笔画库，库外字会提示。</div>');
-    const btn = document.createElement('button');
-    btn.className = 'btn btn--primary';
-    btn.textContent = '起卦测字';
-    f.appendChild(btn);
-    btn.addEventListener('click', () => {
-      const word = f.querySelector('#cz-word').value.trim();
-      if (!word) { alert('请写一个字'); return; }
-      submitDivination('meihua', { type: 'word', word });
     });
     return f;
   }
