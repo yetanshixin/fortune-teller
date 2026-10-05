@@ -54,11 +54,6 @@ class TarotRequest(BaseModel):
     spread: Literal["single", "three", "celtic"] = "three"
 
 
-class RuneRequest(BaseModel):
-    """卢恩符文抽取。count: 1~5 枚。"""
-    count: int = Field(default=3, ge=1, le=5)
-
-
 class NumerologyRequest(BaseModel):
     """生命灵数。name 为中文或英文姓名，仅用于姓名灵数（英文）。"""
     year: int
@@ -81,11 +76,12 @@ class DreamRequest(BaseModel):
 
 
 class NamingRequest(BaseModel):
-    """起名请求。surname 必填；lang 语言（zh 中文/en 英文/ja 日文）；bazi 生辰（可选）；gender 风格倾向。"""
+    """起名请求。surname 必填；lang 语言（zh 中文/en 英文/ja 日文）；bazi 生辰（可选）；old_name 旧名（改名用，可选）；gender 风格倾向。"""
     surname: str = Field(..., min_length=1, max_length=20)
     gender: Literal["男", "女"] = "男"
     lang: Literal["zh", "en", "ja"] = "zh"
     bazi: Optional[BaziRequest] = None
+    old_name: Optional[str] = None    # 改名：原有名字（可选）
     preference: Optional[str] = None   # 期望寓意/风格，如「温婉」「大气」
 
 
@@ -100,3 +96,19 @@ class CompanyNamingRequest(BaseModel):
     lang: Literal["zh", "en", "ja"] = "zh"
     preference: Optional[str] = None
     length: int = Field(default=2, ge=2, le=4)
+
+
+class HeHunRequest(BaseModel):
+    """合婚请求：男女双方生辰。"""
+    male: BaziRequest
+    female: BaziRequest
+
+
+class ChouQianRequest(BaseModel):
+    """抽签请求（随机抽一支签）。"""
+    pass
+
+
+class ShuZiRequest(BaseModel):
+    """数字测吉凶请求：手机号/车牌号等数字串。"""
+    number: str = Field(..., min_length=1, max_length=20)

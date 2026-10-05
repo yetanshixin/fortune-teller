@@ -9,21 +9,23 @@ from fastapi.staticfiles import StaticFiles
 
 from app import persona
 from app.config import ALLOWED_MODELS, HOST, PORT
-from app.divination import bazi, dream, huangli, liuyao, meihua, naming, numerology, runes, tarot
+from app.divination import bazi, chouqian, dream, hehun, huangli, liuyao, meihua, naming, numerology, shuzi, tarot
 from app.schemas import (
     BaziRequest,
     ChatMessage,
     ChatRequest,
     ChatResponse,
+    ChouQianRequest,
     CompanyNamingRequest,
     DreamRequest,
+    HeHunRequest,
     HuangLiRequest,
     LiuYaoRequest,
     MeiHuaRequest,
     NameFortuneRequest,
     NamingRequest,
     NumerologyRequest,
-    RuneRequest,
+    ShuZiRequest,
     TarotRequest,
 )
 from app.services import deepseek
@@ -127,11 +129,6 @@ async def div_tarot(req: TarotRequest):
     return tarot.draw_tarot(req.spread)
 
 
-@app.post("/api/divination/runes")
-async def div_runes(req: RuneRequest):
-    return runes.draw_runes(req.count)
-
-
 @app.post("/api/divination/numerology")
 async def div_numerology(req: NumerologyRequest):
     return numerology.compute_numerology(req)
@@ -167,6 +164,24 @@ async def div_name_fortune(req: NameFortuneRequest):
 async def div_company_naming(req: CompanyNamingRequest):
     try:
         return naming.compute_company_naming(req)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/api/divination/hehun")
+async def div_hehun(req: HeHunRequest):
+    return hehun.compute_hehun(req.male, req.female)
+
+
+@app.post("/api/divination/chouqian")
+async def div_chouqian(req: ChouQianRequest):
+    return chouqian.draw_qian()
+
+
+@app.post("/api/divination/shuzi")
+async def div_shuzi(req: ShuZiRequest):
+    try:
+        return shuzi.compute_shuzi(req.number)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 

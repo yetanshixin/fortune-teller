@@ -236,6 +236,13 @@ def compute_naming(req: NamingRequest) -> dict:
     surname = req.surname.strip()
     if not surname:
         raise ValueError("请填写姓氏")
+    # 改名：若提供了旧名，先测旧名，供先生结合旧名不足推荐新名
+    old_name_fortune = None
+    if req.old_name:
+        try:
+            old_name_fortune = compute_name_fortune(req.old_name)
+        except ValueError:
+            old_name_fortune = {"name": req.old_name, "note": "旧名字库外或无法精确测算"}
     lang = getattr(req, "lang", "zh")
     if lang == "en" or (lang == "zh" and _detect_lang(surname) == "english"):
         return _naming_foreign(req, ENGLISH_NAMES)
@@ -292,6 +299,7 @@ def compute_naming(req: NamingRequest) -> dict:
         "suggest_wuxing": target,
         "preference": pref,
         "candidates": candidates,
+        "old_name_fortune": old_name_fortune,   # 改名：旧名分析
     }
 
 

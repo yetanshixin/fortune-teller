@@ -25,13 +25,15 @@
     { key: 'liuyao', name: '六爻', emoji: '🪙', desc: '摇卦纳甲 · 本卦变卦 · 六亲世应' },
     { key: 'meihua', name: '梅花易数', emoji: '🌸', desc: '数字/时间/测字起卦' },
     { key: 'tarot', name: '塔罗', emoji: '🎴', desc: '78 张韦特塔罗 · 多牌阵' },
-    { key: 'runes', name: '卢恩符文', emoji: 'ᚱ', desc: '北欧 24 符文 · 抽符占卜' },
     { key: 'numerology', name: '生命灵数', emoji: '🔢', desc: '毕达哥拉斯灵数 · 主数' },
     { key: 'huangli', name: '黄历择日', emoji: '📅', desc: '宜忌 · 建除 · 冲煞 · 吉神方位' },
     { key: 'dream', name: '解梦', emoji: '💭', desc: '周公解梦 · 梦境关键词' },
     { key: 'naming', name: '起名', emoji: '📛', desc: '五行补益 · 五格数理 · 字义' },
     { key: 'name_fortune', name: '测名', emoji: '📝', desc: '姓名五格数理 · 五行 · 吉凶' },
     { key: 'company_naming', name: '公司取名', emoji: '🏢', desc: '商号 · 行业 · 吉祥字' },
+    { key: 'hehun', name: '合婚', emoji: '💑', desc: '八字配对 · 生肖五行日柱' },
+    { key: 'chouqian', name: '抽签', emoji: '🎐', desc: '求签问吉凶 · 签文' },
+    { key: 'shuzi', name: '数字测吉凶', emoji: '📱', desc: '手机号/车牌号 · 数字能量' },
   ];
 
   const WELCOME_SUGGESTIONS = [
@@ -314,7 +316,7 @@
     el.innerHTML =
       '<div class="welcome__icon">🔮</div>' +
       '<h1 class="welcome__title">有缘人，你来了</h1>' +
-      '<p class="welcome__subtitle">我是玄机先生，精通八字、六爻、梅花、塔罗、卢恩、灵数、黄历择日、起名、解梦等术数</p>' +
+      '<p class="welcome__subtitle">我是玄机先生，精通八字、六爻、梅花、塔罗、灵数、黄历择日、起名、解梦、抽签、合婚等术数</p>' +
       '<p class="welcome__desc">想算什么，尽管开口——问感情、问财运、测吉凶、看运势、起名、择日、解梦、做决策皆可。' +
       '我会先问清来龙去脉，再依据排盘与卦象，把道理一条条讲给你听。</p>' +
       '<div class="suggestions">' +
@@ -361,13 +363,15 @@
       case 'liuyao': return formatLiuYao(data);
       case 'meihua': return formatMeiHua(data);
       case 'tarot': return formatTarot(data);
-      case 'runes': return formatRunes(data);
       case 'numerology': return formatNumerology(data);
       case 'huangli': return formatHuangLi(data);
       case 'dream': return formatDream(data);
       case 'naming': return formatNaming(data);
       case 'name_fortune': return formatNameFortune(data);
       case 'company_naming': return formatCompanyNaming(data);
+      case 'hehun': return formatHeHun(data);
+      case 'chouqian': return formatChouQian(data);
+      case 'shuzi': return formatShuZi(data);
       default: return { text: '', html: '' };
     }
   }
@@ -495,24 +499,6 @@
     return { text, html };
   }
 
-  function formatRunes(d) {
-    const text = [
-      '【测算数据 · 卢恩符文】',
-      ...d.runes.map((r) => `符文 ${r.glyph} ${r.name}（${r.reversed ? '逆位' : '正位'}）——${r.meaning}`),
-      '',
-      '请先生据此解读符文，结合我的问题详细分析。',
-    ].join('\n');
-
-    const runes = d.runes.map((r) =>
-      `<div class="rune"><div class="rune__glyph">${r.glyph}</div><div class="rune__name">${r.name}${r.reversed ? '（逆）' : ''}</div>` +
-      `<div style="font-size:11px;color:var(--text-dim)">${escapeHtml(r.meaning)}</div></div>`
-    ).join('');
-    const html =
-      '<div class="div-card"><div class="div-card__head">ᚱ 卢恩符文</div><div class="div-card__body">' +
-      `<div class="rune-list">${runes}</div></div></div>`;
-    return { text, html };
-  }
-
   function formatNumerology(d) {
     const text = [
       '【测算数据 · 生命灵数】',
@@ -544,8 +530,10 @@
       `忌：${d.ji.join('、') || '无'}`,
       `吉神方位：财神${d.position.cai}，喜神${d.position.xi}，福神${d.position.fu}`,
       d.matter ? `所问事项：${d.matter}` : '',
+      `吉时：${d.shichen.filter((s) => s.luck === '吉').map((s) => s.shi + '时').join('、')}`,
+      `凶时：${d.shichen.filter((s) => s.luck === '凶').map((s) => s.shi + '时').join('、')}`,
       '',
-      '请先生据此判断该日吉凶是否适合我所问之事，详细说明。',
+      '请先生据此判断该日吉凶是否适合我所问之事，并结合吉时择时，详细说明。',
     ].join('\n');
 
     const html =
@@ -555,6 +543,8 @@
       `<p style="color:var(--cinnabar)">忌：${d.ji.join('、') || '无'}</p>` +
       `<p style="color:var(--gold-soft)">宜：${d.yi.join('、') || '无'}</p>` +
       `<p>财神 ${d.position.cai} · 喜神 ${d.position.xi} · 福神 ${d.position.fu}</p>` +
+      `<p style="color:var(--gold-soft)">吉时：${d.shichen.filter((s) => s.luck === '吉').map((s) => s.shi + '时').join('、')}</p>` +
+      `<p style="color:var(--text-faint)">凶时：${d.shichen.filter((s) => s.luck === '凶').map((s) => s.shi + '时').join('、')}</p>` +
       '</div></div>';
     return { text, html };
   }
@@ -605,6 +595,7 @@
     const text = [
       '【测算数据 · 起名】',
       `姓氏：${d.surname}（康熙${d.surname_strokes}画），${d.gender}`,
+      ...(d.old_name_fortune ? [`旧名字「${d.old_name_fortune.name}」：${d.old_name_fortune.wuge ? `五格 天${d.old_name_fortune.wuge.天格} 人${d.old_name_fortune.wuge.人格} 地${d.old_name_fortune.wuge.地格} 外${d.old_name_fortune.wuge.外格} 总${d.old_name_fortune.wuge.总格}` : '库外或无法精确测算'}`] : []),
       `建议补益五行：${d.suggest_wuxing.join('、')}`,
       '候选名字：',
       ...d.candidates.slice(0, 10).map((c) =>
@@ -689,6 +680,61 @@
     return { text, html };
   }
 
+  function formatHeHun(d) {
+    const text = [
+      '【测算数据 · 合婚】',
+      `男方：${d.male.shengxiao}（${d.male.zhi}），纳音${d.male.nayin}，日柱${d.male.day_ganzhi}`,
+      `女方：${d.female.shengxiao}（${d.female.zhi}），纳音${d.female.nayin}，日柱${d.female.day_ganzhi}`,
+      `生肖：${d.shengxiao_rel}`,
+      `纳音：${d.nayin_rel}`,
+      `日柱：${d.day_gan_rel}；${d.day_zhi_rel}`,
+      `五行：${d.wuxing_balance}`,
+      '',
+      '请先生据此分析两人是否相合、婚姻走势，结合生肖、五行、日柱详细说明。',
+    ].join('\n');
+    const html =
+      '<div class="div-card"><div class="div-card__head">💑 合婚 · ' + d.male.shengxiao + '×' + d.female.shengxiao + '</div><div class="div-card__body">' +
+      `<p><b>${d.shengxiao_rel}</b></p><p>${d.nayin_rel}</p><p>${d.day_gan_rel}；${d.day_zhi_rel}</p><p>${d.wuxing_balance}</p>` +
+      '</div></div>';
+    return { text, html };
+  }
+
+  function formatChouQian(d) {
+    const text = [
+      '【测算数据 · 抽签】',
+      `签文（${d.level}）：${d.qianwen}`,
+      `解签：${d.jieqian}`,
+      '',
+      '请先生据此解签，结合我的问题详细说明。',
+    ].join('\n');
+    const html =
+      '<div class="div-card"><div class="div-card__head">🎐 抽签 · ' + d.level + '</div><div class="div-card__body">' +
+      `<p style="font-family:var(--serif);font-size:17px;color:var(--gold-soft)">${escapeHtml(d.qianwen)}</p>` +
+      `<p>${escapeHtml(d.jieqian)}</p></div></div>`;
+    return { text, html };
+  }
+
+  function formatShuZi(d) {
+    const text = [
+      '【测算数据 · 数字测吉凶】',
+      `数字：${d.number}`,
+      `五行分布：${JSON.stringify(d.wuxing_count)}`,
+      `吉组合：${d.ji.map((x) => x[0]).join('、') || '无'}`,
+      `凶组合：${d.xiong.map((x) => x[0]).join('、') || '无'}`,
+      `综合：${d.verdict}`,
+      '',
+      '请先生据此分析这个数字的吉凶，结合数字能量详细说明。',
+    ].join('\n');
+    const html =
+      '<div class="div-card"><div class="div-card__head">🔢 数字测吉凶 · ' + escapeHtml(d.number) + '</div><div class="div-card__body">' +
+      `<p>综合：<b style="color:var(--gold-soft)">${d.verdict}</b></p>` +
+      `<p>五行：${Object.entries(d.wuxing_count).map(([k, v]) => k + v).join(' ')}</p>` +
+      (d.ji.length ? `<p>吉组合：${d.ji.map((x) => x[0]).join('、')}</p>` : '') +
+      (d.xiong.length ? `<p style="color:var(--cinnabar)">凶组合：${d.xiong.map((x) => x[0]).join('、')}</p>` : '') +
+      '</div></div>';
+    return { text, html };
+  }
+
   /* ---------------- 术数面板 ---------------- */
   function renderForm(method) {
     els.divinationForm.innerHTML = '';
@@ -698,13 +744,15 @@
       case 'liuyao': form.appendChild(formLiuYao()); break;
       case 'meihua': form.appendChild(formMeiHua()); break;
       case 'tarot': form.appendChild(formTarot()); break;
-      case 'runes': form.appendChild(formRunes()); break;
       case 'numerology': form.appendChild(formNumerology()); break;
       case 'huangli': form.appendChild(formHuangLi()); break;
       case 'dream': form.appendChild(formDream()); break;
       case 'naming': form.appendChild(formNaming()); break;
       case 'name_fortune': form.appendChild(formNameFortune()); break;
       case 'company_naming': form.appendChild(formCompanyNaming()); break;
+      case 'hehun': form.appendChild(formHeHun()); break;
+      case 'chouqian': form.appendChild(formChouQian()); break;
+      case 'shuzi': form.appendChild(formShuZi()); break;
     }
     els.divinationForm.appendChild(form);
   }
@@ -877,21 +925,6 @@
     return f;
   }
 
-  function formRunes() {
-    const f = document.createElement('div');
-    f.innerHTML =
-      '<div class="div-form__title">卢恩符文</div>' +
-      '<div class="div-form__desc">北欧古符文占卜，抽取符文探问运势与指引。</div>';
-    f.appendChild(field('抽取数量',
-      '<select id="rn-count"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select>'));
-    const btn = document.createElement('button');
-    btn.className = 'btn btn--primary';
-    btn.textContent = 'ᚱ 抽取符文';
-    f.appendChild(btn);
-    btn.addEventListener('click', () => submitDivination('runes', { count: Number(f.querySelector('#rn-count').value) }));
-    return f;
-  }
-
   function formNumerology() {
     const f = document.createElement('div');
     f.innerHTML =
@@ -954,6 +987,7 @@
     const gender = segControl([{ value: '男', label: '男' }, { value: '女', label: '女' }], '男');
     f.appendChild(field('性别', gender));
     f.appendChild(field('生辰（可选，中文名用于五行补益）', '<input type="datetime-local" id="nm-bazi">'));
+    f.appendChild(field('旧名字（可选，改名用）', '<input id="nm-old" maxlength="20" placeholder="例如：张伟">'));
     f.appendChild(field('期望寓意（可选）', '<input id="nm-pref" placeholder="例如：睿智、温婉">'));
     const btn = document.createElement('button');
     btn.className = 'btn btn--primary';
@@ -971,7 +1005,7 @@
         const [hh, mm] = (time || '00:00').split(':').map(Number);
         bazi = { year: y, month: m, day: d, hour: hh, minute: mm, gender: genderVal, calendar: 'solar' };
       }
-      submitDivination('naming', { surname, gender: genderVal, lang: lang.querySelector('.is-active').dataset.v, bazi, preference: f.querySelector('#nm-pref').value.trim() || null });
+      submitDivination('naming', { surname, gender: genderVal, lang: lang.querySelector('.is-active').dataset.v, bazi, old_name: f.querySelector('#nm-old').value.trim() || null, preference: f.querySelector('#nm-pref').value.trim() || null });
     });
     return f;
   }
@@ -1018,6 +1052,72 @@
         preference: f.querySelector('#cn-pref').value.trim() || null,
         length: Number(length.querySelector('.is-active').dataset.v),
       });
+    });
+    return f;
+  }
+
+  function formHeHun() {
+    const f = document.createElement('div');
+    f.innerHTML =
+      '<div class="div-form__title">合婚</div>' +
+      '<div class="div-form__desc">填写男女双方生辰，看两人生肖、五行、日柱是否相合。</div>';
+    const cal = segControl([{ value: 'solar', label: '公历' }, { value: 'lunar', label: '农历' }], 'solar');
+    f.appendChild(field('历法', cal));
+    f.insertAdjacentHTML('beforeend', '<div class="div-form__title" style="font-size:14px;margin-top:8px">男方</div>');
+    const mDate = document.createElement('div'); mDate.className = 'form-row';
+    mDate.appendChild(field('出生日期', '<input type="date" id="hh-m-date" value="1995-01-01">'));
+    mDate.appendChild(field('时辰', '<input type="time" id="hh-m-time" value="10:00">'));
+    f.appendChild(mDate);
+    f.insertAdjacentHTML('beforeend', '<div class="div-form__title" style="font-size:14px;margin-top:8px">女方</div>');
+    const fDate = document.createElement('div'); fDate.className = 'form-row';
+    fDate.appendChild(field('出生日期', '<input type="date" id="hh-f-date" value="1996-01-01">'));
+    fDate.appendChild(field('时辰', '<input type="time" id="hh-f-time" value="10:00">'));
+    f.appendChild(fDate);
+    const btn = document.createElement('button');
+    btn.className = 'btn btn--primary';
+    btn.textContent = '合婚测算';
+    f.appendChild(btn);
+    btn.addEventListener('click', () => {
+      const calendar = cal.querySelector('.is-active').dataset.v;
+      const [my, mm, md] = f.querySelector('#hh-m-date').value.split('-').map(Number);
+      const [mh, mmin] = f.querySelector('#hh-m-time').value.split(':').map(Number);
+      const [fy, fm, fd] = f.querySelector('#hh-f-date').value.split('-').map(Number);
+      const [fh, fmin] = f.querySelector('#hh-f-time').value.split(':').map(Number);
+      submitDivination('hehun', {
+        male: { year: my, month: mm, day: md, hour: mh, minute: mmin, gender: '男', calendar },
+        female: { year: fy, month: fm, day: fd, hour: fh, minute: fmin, gender: '女', calendar },
+      });
+    });
+    return f;
+  }
+
+  function formChouQian() {
+    const f = document.createElement('div');
+    f.innerHTML =
+      '<div class="div-form__title">抽签</div>' +
+      '<div class="div-form__desc">心中默念所问之事，虔诚求一支签。</div>';
+    const btn = document.createElement('button');
+    btn.className = 'btn btn--primary';
+    btn.textContent = '🎐 求签';
+    f.appendChild(btn);
+    btn.addEventListener('click', () => submitDivination('chouqian', {}));
+    return f;
+  }
+
+  function formShuZi() {
+    const f = document.createElement('div');
+    f.innerHTML =
+      '<div class="div-form__title">数字测吉凶</div>' +
+      '<div class="div-form__desc">输入手机号、车牌号等数字，看其五行与数字能量吉凶。</div>';
+    f.appendChild(field('数字', '<input id="sz-number" maxlength="20" placeholder="例如：13812345678">'));
+    const btn = document.createElement('button');
+    btn.className = 'btn btn--primary';
+    btn.textContent = '测吉凶';
+    f.appendChild(btn);
+    btn.addEventListener('click', () => {
+      const number = f.querySelector('#sz-number').value.trim();
+      if (!number) { alert('请输入数字'); return; }
+      submitDivination('shuzi', { number });
     });
     return f;
   }
