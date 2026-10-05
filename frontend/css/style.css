@@ -658,6 +658,28 @@ body::before {
   color: var(--gold);
 }
 
+/* 复制成功等轻提示 */
+.toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  background: var(--surface);
+  border: 1px solid var(--gold-dim);
+  color: var(--gold-soft);
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-size: 13px;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s;
+}
+.toast.is-show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 /* ---------------- 欢迎页 ---------------- */
 .welcome {
   text-align: center;

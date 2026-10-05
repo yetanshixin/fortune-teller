@@ -144,6 +144,40 @@
     });
   }
 
+  function copyText(text) {
+    const done = () => showToast('已复制');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, () => { fallbackCopy(text); done(); });
+    } else {
+      fallbackCopy(text);
+      done();
+    }
+  }
+
+  function fallbackCopy(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch { /* 忽略 */ }
+    document.body.removeChild(ta);
+  }
+
+  function showToast(msg) {
+    let toast = document.querySelector('.toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.className = 'toast';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = msg;
+    toast.classList.add('is-show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toast.classList.remove('is-show'), 1500);
+  }
+
   function scrollToBottom() {
     els.messages.scrollTop = els.messages.scrollHeight;
   }
@@ -1378,6 +1412,14 @@
       if (chip) { els.input.value = chip.dataset.prompt; autoResize(); updateSendState(); sendMessage(); }
       const tool = e.target.closest('.tool-chip');
       if (tool) openDivination(tool.dataset.method);
+    });
+
+    // 双击消息气泡复制该消息内容
+    els.messages.addEventListener('dblclick', (e) => {
+      const bubble = e.target.closest('.bubble');
+      if (!bubble) return;
+      const text = bubble.innerText.trim();
+      if (text) copyText(text);
     });
 
     els.sidebarToggle.addEventListener('click', () => els.sidebar.classList.contains('is-open') ? closeSidebar() : openSidebar());
