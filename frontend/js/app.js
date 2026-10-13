@@ -35,6 +35,7 @@
     { key: 'hehun', name: '合婚', emoji: '💑', desc: '八字配对 · 生肖五行日柱' },
     { key: 'chouqian', name: '抽签', emoji: '🎐', desc: '求签问吉凶 · 签文' },
     { key: 'shuzi', name: '数字测吉凶', emoji: '📱', desc: '手机号/车牌号 · 数字能量' },
+    { key: 'xingzuo', name: '星座', emoji: '♈', desc: '太阳星座 · 配对 · 运势' },
   ];
 
   const WELCOME_SUGGESTIONS = [
@@ -374,6 +375,7 @@
       case 'hehun': return formatHeHun(data);
       case 'chouqian': return formatChouQian(data);
       case 'shuzi': return formatShuZi(data);
+      case 'xingzuo': return formatXingZuo(data);
       default: return { text: '', html: '' };
     }
   }
@@ -774,6 +776,53 @@
     return { text, html };
   }
 
+  function formatXingZuo(d) {
+    if (d.relation) {
+      const text = [
+        '【测算数据 · 星座配对】',
+        `${d.xz1}（${d.xiang1}象）与${d.xz2}（${d.xiang2}象）：${d.relation}`,
+        '',
+        '请先生据此分析这两个星座的配对情况，结合性格详细说明。',
+      ].join('\n');
+      const html =
+        '<div class="div-card"><div class="div-card__head">♈ 星座配对 · ' + d.xz1 + ' × ' + d.xz2 + '</div><div class="div-card__body">' +
+        `<p><b>${d.relation}</b></p></div></div>`;
+      return { text, html };
+    }
+    if (d.yunshi) {
+      const ys = d.yunshi;
+      const text = [
+        '【测算数据 · 星座运势】',
+        `星座：${d.name}（${d.xiang}象）`,
+        `爱情：${ys.爱情}`,
+        `事业：${ys.事业}`,
+        `财运：${ys.财运}`,
+        `健康：${ys.健康}`,
+        `幸运色：${d.lucky_color}；幸运数字：${d.lucky_number}`,
+        '',
+        '请先生据此解读这个星座的运势，结合星座性格详细说明。',
+      ].join('\n');
+      const html =
+        '<div class="div-card"><div class="div-card__head">♈ 星座运势 · ' + d.name + '</div><div class="div-card__body">' +
+        `<p>爱情：${ys.爱情}</p><p>事业：${ys.事业}</p><p>财运：${ys.财运}</p><p>健康：${ys.健康}</p>` +
+        `<p>幸运色：${d.lucky_color}；幸运数字：${d.lucky_number}</p></div></div>`;
+      return { text, html };
+    }
+    const text = [
+      '【测算数据 · 星座】',
+      `星座：${d.name}（${d.english}，${d.xiang}象）`,
+      `性格：${d.character}`,
+      `幸运色：${d.lucky_color}；幸运数字：${d.lucky_number}`,
+      '',
+      '请先生据此解读这个星座的性格特点，结合我的情况详细说明。',
+    ].join('\n');
+    const html =
+      '<div class="div-card"><div class="div-card__head">♈ 星座 · ' + d.name + '</div><div class="div-card__body">' +
+      `<p><b>${d.english}</b> · ${d.xiang}象</p><p>性格：${d.character}</p>` +
+      `<p>幸运色：${d.lucky_color}；幸运数字：${d.lucky_number}</p></div></div>`;
+    return { text, html };
+  }
+
   /* ---------------- 术数面板 ---------------- */
   function renderForm(method) {
     els.divinationForm.innerHTML = '';
@@ -793,6 +842,7 @@
       case 'hehun': form.appendChild(formHeHun()); break;
       case 'chouqian': form.appendChild(formChouQian()); break;
       case 'shuzi': form.appendChild(formShuZi()); break;
+      case 'xingzuo': form.appendChild(formXingZuo()); break;
     }
     els.divinationForm.appendChild(form);
   }
@@ -1177,6 +1227,55 @@
       if (!number) { alert('请输入数字'); return; }
       submitDivination('shuzi', { number });
     });
+    return f;
+  }
+
+  function formXingZuo() {
+    const f = document.createElement('div');
+    f.innerHTML =
+      '<div class="div-form__title">星座</div>' +
+      '<div class="div-form__desc">太阳星座、星座配对、星座运势。（月亮/上升星座、本命星盘需专业天文排盘，暂不提供）</div>';
+    const type = segControl([{ value: 'fortune', label: '算星座' }, { value: 'peidui', label: '配对' }, { value: 'yunshi', label: '运势' }], 'fortune');
+    f.appendChild(type);
+    const box = document.createElement('div');
+    box.style.marginTop = '12px';
+    f.appendChild(box);
+
+    const XZ_LIST = ['白羊座', '金牛座', '双子座', '巨蟹座', '狮子座', '处女座', '天秤座', '天蝎座', '射手座', '摩羯座', '水瓶座', '双鱼座'];
+    const options = XZ_LIST.map((x) => `<option value="${x}">${x}</option>`).join('');
+
+    function render(v) {
+      box.innerHTML = '';
+      if (v === 'fortune') {
+        box.appendChild(field('出生日期', '<input type="date" id="xz-date" value="2000-01-01">'));
+      } else if (v === 'peidui') {
+        box.appendChild(field('星座一', '<select id="xz-1">' + options + '</select>'));
+        box.appendChild(field('星座二', '<select id="xz-2">' + options + '</select>'));
+      } else {
+        box.appendChild(field('星座', '<select id="xz-sel">' + options + '</select>'));
+      }
+      const btn = document.createElement('button');
+      btn.className = 'btn btn--primary';
+      btn.textContent = v === 'fortune' ? '算星座' : (v === 'peidui' ? '测配对' : '看运势');
+      box.appendChild(btn);
+      btn.addEventListener('click', () => {
+        if (v === 'fortune') {
+          const [y, m, d] = box.querySelector('#xz-date').value.split('-').map(Number);
+          submitDivination('xingzuo', { type: 'fortune', month: m, day: d });
+        } else if (v === 'peidui') {
+          submitDivination('xingzuo', { type: 'peidui', xz1: box.querySelector('#xz-1').value, xz2: box.querySelector('#xz-2').value });
+        } else {
+          submitDivination('xingzuo', { type: 'yunshi', xz: box.querySelector('#xz-sel').value });
+        }
+      });
+    }
+
+    type.addEventListener('click', (e) => {
+      const b = e.target.closest('button'); if (!b) return;
+      type.querySelectorAll('button').forEach((x) => x.classList.toggle('is-active', x === b));
+      render(b.dataset.v);
+    });
+    render('fortune');
     return f;
   }
 

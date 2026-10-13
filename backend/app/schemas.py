@@ -117,3 +117,13 @@ class ShuZiRequest(BaseModel):
 class CompanyNameFortuneRequest(BaseModel):
     """公司测名请求：输入已有公司名（中文/日文汉字或英文名）。"""
     name: str = Field(..., min_length=1, max_length=40)
+
+
+class XingZuoRequest(BaseModel):
+    """星座请求。type: fortune=算星座 / peidui=星座配对 / yunshi=星座运势。"""
+    type: Literal["fortune", "peidui", "yunshi"] = "fortune"
+    month: int = 0
+    day: int = 0
+    xz1: Optional[str] = None
+    xz2: Optional[str] = None
+    xz: Optional[str] = None
