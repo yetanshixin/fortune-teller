@@ -28,10 +28,8 @@
     { key: 'numerology', name: '生命灵数', emoji: '🔢', desc: '毕达哥拉斯灵数 · 主数' },
     { key: 'huangli', name: '黄历择日', emoji: '📅', desc: '宜忌 · 建除 · 冲煞 · 吉神方位' },
     { key: 'dream', name: '解梦', emoji: '💭', desc: '周公解梦 · 梦境关键词' },
-    { key: 'naming', name: '起名', emoji: '📛', desc: '五行补益 · 五格数理 · 字义' },
-    { key: 'name_fortune', name: '测名', emoji: '📝', desc: '姓名五格数理 · 五行 · 吉凶' },
-    { key: 'company_naming', name: '公司取名', emoji: '🏢', desc: '商号 · 行业 · 吉祥字' },
-    { key: 'company_name_fortune', name: '公司测名', emoji: '🏢', desc: '测已有公司名吉凶' },
+    { key: 'name', name: '姓名', emoji: '📛', desc: '起名 · 测名 · 改名' },
+    { key: 'company', name: '公司名', emoji: '🏢', desc: '公司取名 · 公司测名' },
     { key: 'hehun', name: '合婚', emoji: '💑', desc: '八字配对 · 生肖五行日柱' },
     { key: 'chouqian', name: '抽签', emoji: '🎐', desc: '求签问吉凶 · 签文' },
     { key: 'shuzi', name: '数字测吉凶', emoji: '📱', desc: '手机号/车牌号 · 数字能量' },
@@ -39,6 +37,12 @@
     { key: 'caiyun', name: '财运分析', emoji: '💰', desc: '八字财星 · 身强弱 · 大运流年' },
     { key: 'taisui', name: '太岁查询', emoji: '🛡️', desc: '犯太岁 · 值冲刑害破 · 民俗解读' },
   ];
+
+  // 合并工具的提交 kind → 工具 key（用于会话标题显示）
+  const KIND_METHOD = {
+    naming: 'name', name_fortune: 'name',
+    company_naming: 'company', company_name_fortune: 'company',
+  };
 
   const WELCOME_SUGGESTIONS = [
     '帮我看看八字运势',
@@ -903,10 +907,8 @@
       case 'numerology': form.appendChild(formNumerology()); break;
       case 'huangli': form.appendChild(formHuangLi()); break;
       case 'dream': form.appendChild(formDream()); break;
-      case 'naming': form.appendChild(formNaming()); break;
-      case 'name_fortune': form.appendChild(formNameFortune()); break;
-      case 'company_naming': form.appendChild(formCompanyNaming()); break;
-      case 'company_name_fortune': form.appendChild(formCompanyNameFortune()); break;
+      case 'name': form.appendChild(formName()); break;
+      case 'company': form.appendChild(formCompany()); break;
       case 'hehun': form.appendChild(formHeHun()); break;
       case 'chouqian': form.appendChild(formChouQian()); break;
       case 'shuzi': form.appendChild(formShuZi()); break;
@@ -1136,101 +1138,123 @@
     return f;
   }
 
-  function formNaming() {
+  function formName() {
     const f = document.createElement('div');
     f.innerHTML =
-      '<div class="div-form__title">起名</div>' +
-      '<div class="div-form__desc">提供姓氏、性别与语言，为你推演候选好名。</div>';
-    const lang = segControl([{ value: 'zh', label: '中文' }, { value: 'en', label: '英文' }, { value: 'ja', label: '日文' }], 'zh');
-    f.appendChild(field('语言', lang));
-    f.appendChild(field('姓氏', '<input id="nm-surname" maxlength="20" placeholder="例如：张 / Smith / 山田">'));
-    const gender = segControl([{ value: '男', label: '男' }, { value: '女', label: '女' }], '男');
-    f.appendChild(field('性别', gender));
-    f.appendChild(field('生辰（可选，中文名用于五行补益）', '<input type="datetime-local" id="nm-bazi">'));
-    f.appendChild(field('旧名字（可选，改名用）', '<input id="nm-old" maxlength="20" placeholder="例如：张伟">'));
-    f.appendChild(field('期望寓意（可选）', '<input id="nm-pref" placeholder="例如：睿智、温婉">'));
-    const btn = document.createElement('button');
-    btn.className = 'btn btn--primary';
-    btn.textContent = '推演名字';
-    f.appendChild(btn);
-    btn.addEventListener('click', () => {
-      const surname = f.querySelector('#nm-surname').value.trim();
-      if (!surname) { alert('请填写姓氏'); return; }
-      const genderVal = gender.querySelector('.is-active').dataset.v;
-      const bzVal = f.querySelector('#nm-bazi').value;
-      let bazi = null;
-      if (bzVal) {
-        const [date, time] = bzVal.split('T');
-        const [y, m, d] = date.split('-').map(Number);
-        const [hh, mm] = (time || '00:00').split(':').map(Number);
-        bazi = { year: y, month: m, day: d, hour: hh, minute: mm, gender: genderVal, calendar: 'solar' };
+      '<div class="div-form__title">姓名</div>' +
+      '<div class="div-form__desc">起名、测名、改名共用一套五格数理与字库；中文按康熙笔画，英文按毕达哥拉斯灵数。字库外的字会如实提示。</div>';
+    const mode = segControl([{ value: 'naming', label: '起名' }, { value: 'fortune', label: '测名' }, { value: 'rename', label: '改名' }], 'naming');
+    f.appendChild(field('模式', mode));
+    const box = document.createElement('div');
+    f.appendChild(box);
+
+    function render(v) {
+      box.innerHTML = '';
+      let langEl = null;
+      let genderEl = null;
+      if (v === 'fortune') {
+        box.appendChild(field('完整姓名', '<input id="nm-name" maxlength="40" placeholder="例如：张伟 / John Smith / 山田太郎">'));
+      } else {
+        langEl = segControl([{ value: 'zh', label: '中文' }, { value: 'en', label: '英文' }, { value: 'ja', label: '日文' }], 'zh');
+        box.appendChild(field('语言', langEl));
+        box.appendChild(field('姓氏', '<input id="nm-surname" maxlength="20" placeholder="例如：张 / Smith / 山田">'));
+        genderEl = segControl([{ value: '男', label: '男' }, { value: '女', label: '女' }], '男');
+        box.appendChild(field('性别', genderEl));
+        box.appendChild(field('生辰（可选，中文名用于五行补益）', '<input type="datetime-local" id="nm-bazi">'));
+        if (v === 'rename') {
+          box.appendChild(field('旧名字（必填）', '<input id="nm-old" maxlength="20" placeholder="例如：张伟">'));
+        }
+        box.appendChild(field('期望寓意（可选）', '<input id="nm-pref" placeholder="例如：睿智、温婉">'));
       }
-      submitDivination('naming', { surname, gender: genderVal, lang: lang.querySelector('.is-active').dataset.v, bazi, old_name: f.querySelector('#nm-old').value.trim() || null, preference: f.querySelector('#nm-pref').value.trim() || null });
-    });
-    return f;
-  }
-
-  function formNameFortune() {
-    const f = document.createElement('div');
-    f.innerHTML =
-      '<div class="div-form__title">测名</div>' +
-      '<div class="div-form__desc">输入一个完整姓名：中文/日文汉字推演五格数理，英文名推演毕达哥拉斯灵数。字库外的字会如实提示。</div>';
-    f.appendChild(field('姓名', '<input id="nf-name" maxlength="40" placeholder="例如：张伟 / John Smith / 山田太郎">'));
-    const btn = document.createElement('button');
-    btn.className = 'btn btn--primary';
-    btn.textContent = '测算姓名';
-    f.appendChild(btn);
-    btn.addEventListener('click', () => {
-      const name = f.querySelector('#nf-name').value.trim();
-      if (!name) { alert('请输入姓名'); return; }
-      submitDivination('name_fortune', { name });
-    });
-    return f;
-  }
-
-  function formCompanyNaming() {
-    const f = document.createElement('div');
-    f.innerHTML =
-      '<div class="div-form__title">公司取名</div>' +
-      '<div class="div-form__desc">填写公司所属行业、语言与期望寓意，为你推演吉祥商号。</div>';
-    const lang = segControl([{ value: 'zh', label: '中文' }, { value: 'en', label: '英文' }, { value: 'ja', label: '日文' }], 'zh');
-    f.appendChild(field('语言', lang));
-    f.appendChild(field('行业', '<input id="cn-industry" maxlength="20" placeholder="例如：科技 / 餐饮 / 贸易">'));
-    const length = segControl([{ value: '2', label: '二字' }, { value: '3', label: '三字' }, { value: '4', label: '四字' }], '2');
-    f.appendChild(field('商号字数（中文）', length));
-    f.appendChild(field('期望寓意（可选）', '<input id="cn-pref" placeholder="例如：兴旺、诚信、创新">'));
-    const btn = document.createElement('button');
-    btn.className = 'btn btn--primary';
-    btn.textContent = '推演商号';
-    f.appendChild(btn);
-    btn.addEventListener('click', () => {
-      const industry = f.querySelector('#cn-industry').value.trim();
-      if (!industry) { alert('请填写行业'); return; }
-      submitDivination('company_naming', {
-        industry,
-        lang: lang.querySelector('.is-active').dataset.v,
-        preference: f.querySelector('#cn-pref').value.trim() || null,
-        length: Number(length.querySelector('.is-active').dataset.v),
+      const btn = document.createElement('button');
+      btn.className = 'btn btn--primary';
+      btn.textContent = v === 'fortune' ? '测算姓名' : (v === 'rename' ? '推演新名' : '推演名字');
+      box.appendChild(btn);
+      btn.addEventListener('click', () => {
+        if (v === 'fortune') {
+          const name = box.querySelector('#nm-name').value.trim();
+          if (!name) { alert('请输入姓名'); return; }
+          submitDivination('name_fortune', { name });
+          return;
+        }
+        const surname = box.querySelector('#nm-surname').value.trim();
+        if (!surname) { alert('请填写姓氏'); return; }
+        const oldVal = v === 'rename' ? (box.querySelector('#nm-old').value.trim() || '') : '';
+        if (v === 'rename' && !oldVal) { alert('改名请填写旧名字'); return; }
+        const genderVal = genderEl.querySelector('.is-active').dataset.v;
+        const bzVal = box.querySelector('#nm-bazi').value;
+        let bazi = null;
+        if (bzVal) {
+          const [date, time] = bzVal.split('T');
+          const [y, m, d] = date.split('-').map(Number);
+          const [hh, mm] = (time || '00:00').split(':').map(Number);
+          bazi = { year: y, month: m, day: d, hour: hh, minute: mm, gender: genderVal, calendar: 'solar' };
+        }
+        submitDivination('naming', { surname, gender: genderVal, lang: langEl.querySelector('.is-active').dataset.v, bazi, old_name: oldVal || null, preference: box.querySelector('#nm-pref').value.trim() || null });
       });
+    }
+
+    mode.addEventListener('click', (e) => {
+      const b = e.target.closest('button'); if (!b) return;
+      mode.querySelectorAll('button').forEach((x) => x.classList.toggle('is-active', x === b));
+      render(b.dataset.v);
     });
+    render('naming');
     return f;
   }
 
-  function formCompanyNameFortune() {
+  function formCompany() {
     const f = document.createElement('div');
     f.innerHTML =
-      '<div class="div-form__title">公司测名</div>' +
-      '<div class="div-form__desc">输入一个已有的公司名，分析其拆字、五行、寓意与吉凶。字库外的字会如实提示。</div>';
-    f.appendChild(field('公司名', '<input id="cnf-name" maxlength="40" placeholder="例如：华为 / Apple / 大和商事">'));
-    const btn = document.createElement('button');
-    btn.className = 'btn btn--primary';
-    btn.textContent = '测算公司名';
-    f.appendChild(btn);
-    btn.addEventListener('click', () => {
-      const name = f.querySelector('#cnf-name').value.trim();
-      if (!name) { alert('请输入公司名'); return; }
-      submitDivination('company_name_fortune', { name });
+      '<div class="div-form__title">公司名</div>' +
+      '<div class="div-form__desc">公司取名按行业与吉祥字库组合商号；公司测名分析已有名称的拆字、五行与寓意。字库外的字会如实提示。</div>';
+    const mode = segControl([{ value: 'naming', label: '取名' }, { value: 'fortune', label: '测名' }], 'naming');
+    f.appendChild(field('模式', mode));
+    const box = document.createElement('div');
+    f.appendChild(box);
+
+    function render(v) {
+      box.innerHTML = '';
+      let langEl = null;
+      let lengthEl = null;
+      if (v === 'fortune') {
+        box.appendChild(field('已有公司名', '<input id="cn-name" maxlength="40" placeholder="例如：华为 / Apple / 大和商事">'));
+      } else {
+        langEl = segControl([{ value: 'zh', label: '中文' }, { value: 'en', label: '英文' }, { value: 'ja', label: '日文' }], 'zh');
+        box.appendChild(field('语言', langEl));
+        box.appendChild(field('行业', '<input id="cn-industry" maxlength="20" placeholder="例如：科技 / 餐饮 / 贸易">'));
+        lengthEl = segControl([{ value: '2', label: '二字' }, { value: '3', label: '三字' }, { value: '4', label: '四字' }], '2');
+        box.appendChild(field('商号字数（中文）', lengthEl));
+        box.appendChild(field('期望寓意（可选）', '<input id="cn-pref" placeholder="例如：兴旺、诚信、创新">'));
+      }
+      const btn = document.createElement('button');
+      btn.className = 'btn btn--primary';
+      btn.textContent = v === 'fortune' ? '测算公司名' : '推演商号';
+      box.appendChild(btn);
+      btn.addEventListener('click', () => {
+        if (v === 'fortune') {
+          const name = box.querySelector('#cn-name').value.trim();
+          if (!name) { alert('请输入公司名'); return; }
+          submitDivination('company_name_fortune', { name });
+          return;
+        }
+        const industry = box.querySelector('#cn-industry').value.trim();
+        if (!industry) { alert('请填写行业'); return; }
+        submitDivination('company_naming', {
+          industry,
+          lang: langEl.querySelector('.is-active').dataset.v,
+          preference: box.querySelector('#cn-pref').value.trim() || null,
+          length: Number(lengthEl.querySelector('.is-active').dataset.v),
+        });
+      });
+    }
+
+    mode.addEventListener('click', (e) => {
+      const b = e.target.closest('button'); if (!b) return;
+      mode.querySelectorAll('button').forEach((x) => x.classList.toggle('is-active', x === b));
+      render(b.dataset.v);
     });
+    render('naming');
     return f;
   }
 
@@ -1421,9 +1445,10 @@
     // 记录排盘卡片消息
     messages.push({ role: 'divination', kind, data });
     destroyTool(activeToolKey);   // 术数用完即销毁对应按钮，防止重复算
-    if (messages.length === 1) { const c = conversations.find((x) => x.id === currentId); if (c) c.title = METHODS.find((m) => m.key === kind)?.name || '测算'; }
+    const methodKey = KIND_METHOD[kind] || kind;
+    if (messages.length === 1) { const c = conversations.find((x) => x.id === currentId); if (c) c.title = METHODS.find((m) => m.key === methodKey)?.name || '测算'; }
     const convo = conversations.find((c) => c.id === currentId);
-    if (convo && convo.title === '新对话') convo.title = METHODS.find((m) => m.key === kind)?.name || '测算';
+    if (convo && convo.title === '新对话') convo.title = METHODS.find((m) => m.key === methodKey)?.name || '测算';
     renderMessages();
     save();
     renderChatList();
@@ -1665,7 +1690,8 @@
     row.innerHTML = '<div class="avatar avatar--bot">玄</div><div class="bubble bubble--bot tool-card-host"></div>';
     const host = row.querySelector('.tool-card-host');
     host.innerHTML = (tools || []).map((key) => {
-      const m = METHODS.find((x) => x.key === key);
+      // 兼容旧数据：历史消息里的 naming/name_fortune/company_* 映射到合并后的工具
+      const m = METHODS.find((x) => x.key === (KIND_METHOD[key] || key));
       return m ? '<button class="tool-chip" data-method="' + m.key + '"><span class="emoji">' + m.emoji + '</span>' + m.name + '</button>' : '';
     }).join('');
     return row;
