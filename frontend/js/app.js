@@ -36,6 +36,8 @@
     { key: 'chouqian', name: '抽签', emoji: '🎐', desc: '求签问吉凶 · 签文' },
     { key: 'shuzi', name: '数字测吉凶', emoji: '📱', desc: '手机号/车牌号 · 数字能量' },
     { key: 'xingzuo', name: '星座', emoji: '♈', desc: '太阳星座 · 配对 · 运势' },
+    { key: 'caiyun', name: '财运分析', emoji: '💰', desc: '八字财星 · 身强弱 · 大运流年' },
+    { key: 'taisui', name: '太岁查询', emoji: '🛡️', desc: '犯太岁 · 值冲刑害破 · 民俗解读' },
   ];
 
   const WELCOME_SUGGESTIONS = [
@@ -376,6 +378,8 @@
       case 'chouqian': return formatChouQian(data);
       case 'shuzi': return formatShuZi(data);
       case 'xingzuo': return formatXingZuo(data);
+      case 'caiyun': return formatCaiYun(data);
+      case 'taisui': return formatTaiSui(data);
       default: return { text: '', html: '' };
     }
   }
@@ -823,6 +827,70 @@
     return { text, html };
   }
 
+  function formatCaiYun(d) {
+    const s = d.strength;
+    const cai = d.cai;
+    const ln = d.liu_nian;
+    const dyLines = d.da_yun.slice(0, 8).map((y) =>
+      `${y.age}岁 ${y.ganzhi}（${y.gan_shishen}/${y.zhi_shishen}）→ ${y.tendency}`);
+    const posLines = cai.positions.length ? cai.positions.join('；') : '四柱未见明财';
+    const text = [
+      '【测算数据 · 财运分析】',
+      `出生：${d.solar}（公历），${d.lunar}，${d.gender}，生肖${d.shengxiao}`,
+      `日主：${d.day_master}（${d.day_master_wuxing}）`,
+      `身强弱：${s.level}（同党${s.tong_dang} / 异党${s.yi_dang}；比劫${s.detail['比劫']}、印${s.detail['印']}、食伤${s.detail['食伤']}、财${s.detail['财']}、官杀${s.detail['官杀']}）`,
+      `财星：财为${cai.wuxing}，共${cai.count}处：${posLines}`,
+      `财星力量：${cai.weight}（${cai.level}）`,
+      `食伤：${d.shishang.count}处，食伤生财：${d.shishang.sheng_cai ? '是' : '否'}`,
+      `比劫：${d.bijie.count}处，比劫夺财：${d.bijie.duo_cai ? '是' : '否'}`,
+      `格局判断：${d.patterns.join('；')}`,
+      '大运财运：' + dyLines.join('；'),
+      `查询流年：${ln.year}年 ${ln.ganzhi}（${ln.shengxiao}），${ln.gan_shishen}/${ln.zhi_shishen} → ${ln.tendency}`,
+      '模型说明：' + d.notes.join(' '),
+      '',
+      '请先生据此为我分析财运，结合我的问题详细解读。',
+    ].join('\n');
+
+    const dy = d.da_yun.slice(0, 8).map((y) =>
+      `<tr><td>${y.age}岁</td><td>${y.ganzhi}</td><td>${y.gan_shishen}/${y.zhi_shishen}</td><td>${y.tendency}</td></tr>`
+    ).join('');
+    const html =
+      '<div class="div-card"><div class="div-card__head">💰 财运分析</div><div class="div-card__body">' +
+      `<p>日主 <b>${d.day_master}</b>（${d.day_master_wuxing}）· 身<b>${s.level}</b>（同党${s.tong_dang}/异党${s.yi_dang}）</p>` +
+      `<p>财星：${cai.wuxing} · ${cai.count}处 · 力量${cai.weight}（${cai.level}）</p>` +
+      `<p>食伤 ${d.shishang.count} 处${d.shishang.sheng_cai ? ' · 食伤生财' : ''}　比劫 ${d.bijie.count} 处${d.bijie.duo_cai ? ' · 比劫夺财' : ''}</p>` +
+      `<p>${d.patterns.map((p) => escapeHtml(p)).join('<br>')}</p>` +
+      `<p>流年 ${ln.year} ${ln.ganzhi}（${ln.shengxiao}）：${escapeHtml(ln.tendency)}</p>` +
+      `<table class="pillar-table"><tr><th>大运</th><th>干支</th><th>十神</th><th>财运倾向</th></tr>${dy}</table>` +
+      '</div></div>';
+    return { text, html };
+  }
+
+  function formatTaiSui(d) {
+    const rel = d.relations.length ? d.relations.join('、') : '无';
+    const text = [
+      '【测算数据 · 太岁查询】',
+      `出生年：${d.birth.year}年 ${d.birth.ganzhi}（生肖${d.birth.shengxiao}）`,
+      `查询年：${d.query.year}年 ${d.query.ganzhi}（生肖${d.query.shengxiao}）`,
+      `命中关系：${rel}`,
+      ...d.details.map((x) => `· ${x.name}：${x.note}`),
+      `结论：${d.summary}`,
+      `说明：${d.disclaimer}`,
+      '',
+      '请先生据此为我解读流年太岁的影响，结合我的问题分析。',
+    ].join('\n');
+
+    const details = d.details.map((x) =>
+      `<p style="margin:6px 0"><b style="color:var(--gold-soft)">${escapeHtml(x.name)}</b>：${escapeHtml(x.note)}</p>`
+    ).join('') || '<p>本年无冲、刑、害、破、合等关系。</p>';
+    const html =
+      '<div class="div-card"><div class="div-card__head">🛡️ 太岁查询</div><div class="div-card__body">' +
+      `<p>出生 ${d.birth.year}年 ${d.birth.ganzhi}（${d.birth.shengxiao}）→ ${d.query.year}年 ${d.query.ganzhi}（${d.query.shengxiao}）</p>` +
+      `<p>命中：<b>${escapeHtml(rel)}</b></p>${details}` +
+      `<p style="color:var(--text-dim)">${escapeHtml(d.summary)}</p></div></div>`;
+    return { text, html };
+  }
+
   /* ---------------- 术数面板 ---------------- */
   function renderForm(method) {
     els.divinationForm.innerHTML = '';
@@ -843,6 +911,8 @@
       case 'chouqian': form.appendChild(formChouQian()); break;
       case 'shuzi': form.appendChild(formShuZi()); break;
       case 'xingzuo': form.appendChild(formXingZuo()); break;
+      case 'caiyun': form.appendChild(formCaiYun()); break;
+      case 'taisui': form.appendChild(formTaiSui()); break;
     }
     els.divinationForm.appendChild(form);
   }
@@ -1276,6 +1346,58 @@
       render(b.dataset.v);
     });
     render('fortune');
+    return f;
+  }
+
+  function formCaiYun() {
+    const f = document.createElement('div');
+    f.innerHTML =
+      '<div class="div-form__title">财运分析</div>' +
+      '<div class="div-form__desc">按八字十神、五行旺衰与大运流年分析财运。请填写出生信息，可选查询某个流年。</div>';
+    const cal = segControl([{ value: 'solar', label: '公历' }, { value: 'lunar', label: '农历' }], 'solar');
+    f.appendChild(field('历法', cal));
+    const dateRow = document.createElement('div');
+    dateRow.className = 'form-row';
+    dateRow.appendChild(field('出生日期', '<input type="date" id="cy-date" value="1990-05-15">'));
+    dateRow.appendChild(field('时辰', '<input type="time" id="cy-time" value="10:00">'));
+    f.appendChild(dateRow);
+    const gender = segControl([{ value: '男', label: '男' }, { value: '女', label: '女' }], '男');
+    f.appendChild(field('性别', gender));
+    f.appendChild(field('查询流年（可选）', `<input type="number" id="cy-year" min="1900" max="2100" value="${new Date().getFullYear()}">`));
+    const btn = document.createElement('button');
+    btn.className = 'btn btn--primary';
+    btn.textContent = '分析财运';
+    f.appendChild(btn);
+    btn.addEventListener('click', () => {
+      const [y, m, d] = f.querySelector('#cy-date').value.split('-').map(Number);
+      const [hh, mm] = f.querySelector('#cy-time').value.split(':').map(Number);
+      const calendar = cal.querySelector('.is-active').dataset.v;
+      const genderVal = gender.querySelector('.is-active').dataset.v;
+      const qy = Number(f.querySelector('#cy-year').value);
+      submitDivination('caiyun', { year: y, month: m, day: d, hour: hh, minute: mm, calendar, gender: genderVal, query_year: qy || undefined });
+    });
+    return f;
+  }
+
+  function formTaiSui() {
+    const f = document.createElement('div');
+    f.innerHTML =
+      '<div class="div-form__title">太岁查询</div>' +
+      '<div class="div-form__desc">按出生日期（公历）与查询年份，判定值、冲、刑、害、破、合太岁。年支以立春为界。</div>';
+    const row = document.createElement('div');
+    row.className = 'form-row';
+    row.appendChild(field('出生日期（公历）', '<input type="date" id="ts-date" value="1990-05-15">'));
+    row.appendChild(field('查询年份', `<input type="number" id="ts-year" min="1900" max="2100" value="${new Date().getFullYear()}">`));
+    f.appendChild(row);
+    const btn = document.createElement('button');
+    btn.className = 'btn btn--primary';
+    btn.textContent = '查询太岁';
+    f.appendChild(btn);
+    btn.addEventListener('click', () => {
+      const [y, m, d] = f.querySelector('#ts-date').value.split('-').map(Number);
+      const qy = Number(f.querySelector('#ts-year').value) || new Date().getFullYear();
+      submitDivination('taisui', { year: y, month: m, day: d, query_year: qy });
+    });
     return f;
   }
 

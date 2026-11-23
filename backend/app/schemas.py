@@ -127,3 +127,16 @@ class XingZuoRequest(BaseModel):
     xz1: Optional[str] = None
     xz2: Optional[str] = None
     xz: Optional[str] = None
+
+
+class CaiYunRequest(BaziRequest):
+    """财运分析请求：出生信息同八字，query_year 为查询流年（默认当年）。"""
+    query_year: Optional[int] = Field(default=None, ge=1900, le=2100)
+
+
+class TaiSuiRequest(BaseModel):
+    """太岁查询请求：year 出生年；month/day 可选（提供则按立春精确取年支）；query_year 查询年。"""
+    year: int = Field(..., ge=1900, le=2100)
+    month: Optional[int] = Field(default=None, ge=1, le=12)
+    day: Optional[int] = Field(default=None, ge=1, le=31)
+    query_year: Optional[int] = Field(default=None, ge=1900, le=2100)

@@ -9,9 +9,10 @@ from fastapi.staticfiles import StaticFiles
 
 from app import persona
 from app.config import ALLOWED_MODELS, HOST, PORT
-from app.divination import bazi, chouqian, dream, hehun, huangli, liuyao, meihua, naming, numerology, shuzi, tarot, xingzuo
+from app.divination import bazi, caiyun, chouqian, dream, hehun, huangli, liuyao, meihua, naming, numerology, shuzi, taisui, tarot, xingzuo
 from app.schemas import (
     BaziRequest,
+    CaiYunRequest,
     ChatMessage,
     ChatRequest,
     ChatResponse,
@@ -27,6 +28,7 @@ from app.schemas import (
     NamingRequest,
     NumerologyRequest,
     ShuZiRequest,
+    TaiSuiRequest,
     TarotRequest,
     XingZuoRequest,
 )
@@ -204,6 +206,19 @@ async def div_xingzuo(req: XingZuoRequest):
         if req.type == "yunshi":
             return xingzuo.compute_xingzuo_yunshi(req.xz or "")
         return xingzuo.compute_xingzuo(req.month, req.day)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/api/divination/caiyun")
+async def div_caiyun(req: CaiYunRequest):
+    return caiyun.compute_caiyun(req)
+
+
+@app.post("/api/divination/taisui")
+async def div_taisui(req: TaiSuiRequest):
+    try:
+        return taisui.compute_taisui(req)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
