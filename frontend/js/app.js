@@ -34,7 +34,7 @@
     { key: 'chouqian', name: '抽签', emoji: '🎐', desc: '求签问吉凶 · 签文' },
     { key: 'shuzi', name: '数字测吉凶', emoji: '📱', desc: '手机号/车牌号 · 数字能量' },
     { key: 'xingzuo', name: '星座', emoji: '♈', desc: '太阳星座 · 配对 · 运势' },
-    { key: 'caiyun', name: '财运分析', emoji: '💰', desc: '八字财星 · 身强弱 · 大运流年' },
+    { key: 'caiyun', name: '财运测算', emoji: '💰', desc: '八字财星 · 身强弱 · 大运流年' },
     { key: 'taisui', name: '太岁查询', emoji: '🛡️', desc: '犯太岁 · 值冲刑害破 · 民俗解读' },
   ];
 
@@ -839,7 +839,7 @@
       `${y.age}岁 ${y.ganzhi}（${y.gan_shishen}/${y.zhi_shishen}）→ ${y.tendency}`);
     const posLines = cai.positions.length ? cai.positions.join('；') : '四柱未见明财';
     const text = [
-      '【测算数据 · 财运分析】',
+      '【测算数据 · 财运测算】',
       `出生：${d.solar}（公历），${d.lunar}，${d.gender}，生肖${d.shengxiao}`,
       `日主：${d.day_master}（${d.day_master_wuxing}）`,
       `身强弱：${s.level}（同党${s.tong_dang} / 异党${s.yi_dang}；比劫${s.detail['比劫']}、印${s.detail['印']}、食伤${s.detail['食伤']}、财${s.detail['财']}、官杀${s.detail['官杀']}）`,
@@ -859,7 +859,7 @@
       `<tr><td>${y.age}岁</td><td>${y.ganzhi}</td><td>${y.gan_shishen}/${y.zhi_shishen}</td><td>${y.tendency}</td></tr>`
     ).join('');
     const html =
-      '<div class="div-card"><div class="div-card__head">💰 财运分析</div><div class="div-card__body">' +
+      '<div class="div-card"><div class="div-card__head">💰 财运测算</div><div class="div-card__body">' +
       `<p>日主 <b>${d.day_master}</b>（${d.day_master_wuxing}）· 身<b>${s.level}</b>（同党${s.tong_dang}/异党${s.yi_dang}）</p>` +
       `<p>财星：${cai.wuxing} · ${cai.count}处 · 力量${cai.weight}（${cai.level}）</p>` +
       `<p>食伤 ${d.shishang.count} 处${d.shishang.sheng_cai ? ' · 食伤生财' : ''}　比劫 ${d.bijie.count} 处${d.bijie.duo_cai ? ' · 比劫夺财' : ''}</p>` +
@@ -1376,7 +1376,7 @@
   function formCaiYun() {
     const f = document.createElement('div');
     f.innerHTML =
-      '<div class="div-form__title">财运分析</div>' +
+      '<div class="div-form__title">财运测算</div>' +
       '<div class="div-form__desc">按八字十神、五行旺衰与大运流年分析财运。请填写出生信息，可选查询某个流年。</div>';
     const cal = segControl([{ value: 'solar', label: '公历' }, { value: 'lunar', label: '农历' }], 'solar');
     f.appendChild(field('历法', cal));

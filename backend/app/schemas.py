@@ -130,7 +130,7 @@ class XingZuoRequest(BaseModel):
 
 
 class CaiYunRequest(BaziRequest):
-    """财运分析请求：出生信息同八字，query_year 为查询流年（默认当年）。"""
+    """财运测算请求：出生信息同八字，query_year 为查询流年（默认当年）。"""
     query_year: Optional[int] = Field(default=None, ge=1900, le=2100)
 
 
